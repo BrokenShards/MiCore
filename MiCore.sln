@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiCore", "MiCore.csproj", "{A6B86686-F02B-4A76-9414-09384A45A22C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiCore.Test", "MiCoreTest\MiCore.Test.csproj", "{27BA0D64-5D96-4049-932D-29262416A97D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6B86686-F02B-4A76-9414-09384A45A22C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6B86686-F02B-4A76-9414-09384A45A22C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6B86686-F02B-4A76-9414-09384A45A22C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6B86686-F02B-4A76-9414-09384A45A22C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27BA0D64-5D96-4049-932D-29262416A97D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27BA0D64-5D96-4049-932D-29262416A97D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27BA0D64-5D96-4049-932D-29262416A97D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27BA0D64-5D96-4049-932D-29262416A97D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CB7A43CF-2017-4798-9794-8D7114714183}
+	EndGlobalSection
+EndGlobal
