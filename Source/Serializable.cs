@@ -558,7 +558,7 @@ namespace MiCore
 		///   Attempts to save XmlLoadable object to file.
 		/// </summary>
 		/// <remarks>
-		///   Please note <see cref="XmlHeader"/> will be written at the beginning of the file
+		///   Please note <see cref="Xml.Header"/> will be written at the beginning of the file
 		///   before the file data.
 		/// </remarks>
 		/// <param name="x">
