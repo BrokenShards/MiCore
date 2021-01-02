@@ -221,6 +221,7 @@ namespace MiCore
 		/// <summary>
 		///   Disposes of the object.
 		/// </summary>
-		public abstract void Dispose();
+		public virtual void Dispose()
+		{ }
 	}
 }

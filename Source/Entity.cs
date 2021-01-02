@@ -233,14 +233,16 @@ namespace MiCore
 				return false;
 
 			foreach( Component c in m_components )
-				foreach( string i in c.IncompatibleComponents )
-					if( c.TypeName.Equals( i ) )
-						return Logger.LogReturn( "Unable to add component: Entity contains incompatible components.", false, LogType.Error );
+				if( c.IncompatibleComponents != null )
+					foreach( string i in c.IncompatibleComponents )
+						if( c.TypeName.Equals( i ) )
+							return Logger.LogReturn( "Unable to add component: Entity contains incompatible components.", false, LogType.Error );
 
-			foreach( string r in comp.RequiredComponents )
-				if( !Contains( r ) )
-					if( !Add( ComponentRegister.Manager.Create( r ) ) )
-						return Logger.LogReturn( "Unable to add component to Entity.", false, LogType.Error );
+			if( comp.RequiredComponents != null )
+				foreach( string r in comp.RequiredComponents )
+					if( !Contains( r ) )
+						if( !Add( ComponentRegister.Manager.Create( r ) ) )
+							return Logger.LogReturn( "Unable to add component to Entity.", false, LogType.Error );
 
 			if( Contains( comp.TypeName ) )
 			{

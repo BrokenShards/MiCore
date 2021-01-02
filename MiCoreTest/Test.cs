@@ -24,6 +24,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Xml;
+
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -157,6 +158,11 @@ namespace MiCore.Test
 					}
 
 					return true;
+				}
+
+				public override string ToString()
+				{
+					return TextData;
 				}
 
 				public void Dispose()

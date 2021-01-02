@@ -34,20 +34,16 @@ namespace MiCore
 	/// <typeparam name="T">
 	///   Data type.
 	/// </typeparam>
-	/// <typeparam name="SerialDataT">
-	///   Serialization data type.
-	/// </typeparam>
 	/// <typeparam name="ReadT">
 	///   The type used to deserialize from a stream.
 	/// </typeparam>
 	/// <typeparam name="WriteT">
 	///   The type used to serialize to a stream.
 	/// </typeparam>
-	public interface IDatabase<T, SerialDataT, ReadT, WriteT> :
+	public interface IDatabase<T, ReadT, WriteT> :
 		IEnumerable<KeyValuePair<string, T>>,
-		ISerializable<SerialDataT, ReadT, WriteT>
-		where T : class, ISerializable<SerialDataT, ReadT, WriteT>, new()
-		where SerialDataT : class
+		ISerializable<ReadT, WriteT>
+		where T : class, ISerializable<ReadT, WriteT>, new()
 	{
 		/// <summary>
 		///   File path used for serialization.
@@ -172,19 +168,15 @@ namespace MiCore
 	/// <typeparam name="T">
 	///   Disposable data type.
 	/// </typeparam>
-	/// <typeparam name="SerialDataT">
-	///   Serialization data type.
-	/// </typeparam>
 	/// <typeparam name="ReadT">
 	///   The type used to deserialize from a stream.
 	/// </typeparam>
 	/// <typeparam name="WriteT">
 	///   The type used to serialize to a stream.
 	/// </typeparam>
-	public interface IDisposableDatabase<T, SerialDataT, ReadT, WriteT> :
-		IDatabase<T, SerialDataT, ReadT, WriteT>, IDisposable
-		where T : class, IDisposable, ISerializable<SerialDataT, ReadT, WriteT>, new()
-		where SerialDataT : class
+	public interface IDisposableDatabase<T, ReadT, WriteT> :
+		IDatabase<T, ReadT, WriteT>, IDisposable
+		where T : class, IDisposable, ISerializable<ReadT, WriteT>, new()
 	{ }
 
 	/// <summary>
@@ -194,7 +186,7 @@ namespace MiCore
 	///   Data type.
 	/// </typeparam>
 	public interface ITextDatabase<T> :
-		IDatabase<T, string, StreamReader, StreamWriter>
+		IDatabase<T, StreamReader, StreamWriter>
 		where T : class, ITextSerializable, new()
 	{ }
 	/// <summary>
@@ -214,7 +206,7 @@ namespace MiCore
 	///   Data type.
 	/// </typeparam>
 	public interface IBinaryDatabase<T> :
-		IDatabase<T, byte[], BinaryReader, BinaryWriter>
+		IDatabase<T, BinaryReader, BinaryWriter>
 		where T : class, IBinarySerializable, new()
 	{ }
 	/// <summary>
@@ -233,9 +225,6 @@ namespace MiCore
 	/// <typeparam name="T">
 	///   Data type.
 	/// </typeparam>
-	/// <typeparam name="SerialDataT">
-	///   Serialization data type.
-	/// </typeparam>
 	/// <typeparam name="ReadT">
 	///   The type used to deserialize from a stream.
 	/// </typeparam>
@@ -243,10 +232,9 @@ namespace MiCore
 	///   The type used to serialize to a stream.
 	/// </typeparam>
 	[Serializable]
-	public abstract class Database<T, SerialDataT, ReadT, WriteT> :
-		IDatabase<T, SerialDataT, ReadT, WriteT>
-		where T : class, ISerializable<SerialDataT, ReadT, WriteT>, new()
-		where SerialDataT : class
+	public abstract class Database<T, ReadT, WriteT> :
+		IDatabase<T, ReadT, WriteT>
+		where T : class, ISerializable<ReadT, WriteT>, new()
 	{
 		/// <summary>
 		///   Constructor
@@ -261,7 +249,7 @@ namespace MiCore
 		/// <param name="sd">
 		///   The database to copy from.
 		/// </param>
-		public Database( Database<T, SerialDataT, ReadT, WriteT> sd )
+		public Database( Database<T, ReadT, WriteT> sd )
 		{
 			if( sd == null )
 				throw new ArgumentNullException();
@@ -317,17 +305,6 @@ namespace MiCore
 		public List<string> Keys
 		{
 			get { return m_db.Keys.ToList(); }
-		}
-
-		/// <summary>
-		///   The object serialized into its data type.
-		/// </summary>
-		public virtual SerialDataT FileData
-		{
-			get
-			{
-				throw new InvalidOperationException();
-			}
 		}
 
 		/// <summary>
@@ -524,9 +501,6 @@ namespace MiCore
 	/// <typeparam name="T">
 	///   Disposable data type.
 	/// </typeparam>
-	/// <typeparam name="SerialDataT">
-	///   Serialization data type.
-	/// </typeparam>
 	/// <typeparam name="ReadT">
 	///   The type used to deserialize from a stream.
 	/// </typeparam>
@@ -534,10 +508,9 @@ namespace MiCore
 	///   The type used to serialize to a stream.
 	/// </typeparam>
 	[Serializable]
-	public abstract class DisposableDatabase<T, SerialDataT, ReadT, WriteT> :
-		Database<T, SerialDataT, ReadT, WriteT>, IDisposableDatabase<T, SerialDataT, ReadT, WriteT>
-		where T : class, IDisposable, ISerializable<SerialDataT, ReadT, WriteT>, new()
-		where SerialDataT : class
+	public abstract class DisposableDatabase<T, ReadT, WriteT> :
+		Database<T, ReadT, WriteT>, IDisposableDatabase<T, ReadT, WriteT>
+		where T : class, IDisposable, ISerializable<ReadT, WriteT>, new()
 	{
 		/// <summary>
 		///   Constructor.
@@ -551,7 +524,7 @@ namespace MiCore
 		/// <param name="dd">
 		///   The database to copy from.
 		/// </param>
-		public DisposableDatabase( DisposableDatabase<T, SerialDataT, ReadT, WriteT> dd )
+		public DisposableDatabase( DisposableDatabase<T, ReadT, WriteT> dd )
 		:	base( dd )
 		{ }
 
@@ -602,7 +575,7 @@ namespace MiCore
 	/// </typeparam>
 	[Serializable]
 	public abstract class TextDatabase<T> : 
-		Database<T, string, StreamReader, StreamWriter>, ITextDatabase<T>
+		Database<T, StreamReader, StreamWriter>, ITextDatabase<T>
 		where T : class, ITextSerializable, new()
 	{
 		/// <summary>
@@ -831,7 +804,7 @@ namespace MiCore
 	/// </typeparam>
 	[Serializable]
 	public abstract class BinaryDatabase<T> :
-		Database<T, byte[], BinaryReader, BinaryWriter>, IBinaryDatabase<T>
+		Database<T, BinaryReader, BinaryWriter>, IBinaryDatabase<T>
 		where T : class, IBinarySerializable, new()
 	{
 		/// <summary>

@@ -30,22 +30,14 @@ namespace MiCore
 	/// <summary>
 	///   Interface for objects that can be serialized/deserialized to/from a file.
 	/// </summary>
-	/// <typeparam name="DataT">
-	///   The data type the object is serialized into.
-	/// </typeparam>
 	/// <typeparam name="ReadT">
 	///   The stream reader type used to deserialize the object from a stream.
 	/// </typeparam>
 	/// <typeparam name="WriteT">
 	///   The stream writer type used to serialize the object to a stream.
 	/// </typeparam>
-	public interface ISerializable<DataT, ReadT, WriteT>
+	public interface ISerializable<ReadT, WriteT>
 	{
-		/// <summary>
-		///   The object serialized into its file data.
-		/// </summary>
-		DataT FileData { get; }
-
 		/// <summary>
 		///   Attempts to deserialize the object from the stream.
 		/// </summary>
@@ -71,12 +63,18 @@ namespace MiCore
 	/// <summary>
 	///   Interface for objects that can be serialized/deserialized to/from text files.
 	/// </summary>
-	public interface ITextSerializable : ISerializable<string, StreamReader, StreamWriter>
+	public interface ITextSerializable : ISerializable<StreamReader, StreamWriter>
 	{ }
 	/// <summary>
 	///   Interface for objects that are be serialized/deserialized to/from binary files.
 	/// </summary>
-	public interface IBinarySerializable : ISerializable<byte[], BinaryReader, BinaryWriter>
+	public interface IBinarySerializable : ISerializable<BinaryReader, BinaryWriter>
+	{ }
+	/// <summary>
+	///   Interface for objects that are be serialized/deserialized to/from xml files
+	///   procedurally.
+	/// </summary>
+	public interface IXmlSerializable : ISerializable<XmlReader, XmlWriter>
 	{ }
 
 	/// <summary>
@@ -104,16 +102,6 @@ namespace MiCore
 	public abstract class TextSerializable : ITextSerializable
 	{
 		/// <summary>
-		///   The object serialized into file data.
-		/// </summary>
-		/// <remarks>
-		///   Used by the default implementation of <see cref="SaveToStream(StreamWriter)"/>.
-		///   Throws <see cref="InvalidOperationException"/> by default so either override this or, 
-		///   <see cref="SaveToStream(StreamWriter)"/>.
-		/// </remarks>
-		public virtual string FileData { get { throw new InvalidOperationException(); } }
-
-		/// <summary>
 		///   Attempts to deserialize the object from the stream.
 		/// </summary>
 		/// <param name="sr">
@@ -127,8 +115,8 @@ namespace MiCore
 		///   Attempts to serialize the object to the stream.
 		/// </summary>
 		/// <remarks>
-		///   Default implementation attempts to write <see cref="FileData"/> to stream so either override this or
-		///   <see cref="FileData"/>.
+		///   Default implementation attempts to write <see cref="ToString()"/> to stream so either override this or
+		///   <see cref="ToString()"/>.
 		/// </remarks>
 		/// <param name="sw">
 		///   Stream writer.
@@ -143,7 +131,7 @@ namespace MiCore
 
 			try
 			{
-				sw.Write( FileData );
+				sw.Write( ToString() );
 			}
 			catch( Exception e )
 			{
@@ -152,6 +140,14 @@ namespace MiCore
 
 			return true;
 		}
+
+		/// <summary>
+		///   Returns the object string as it would be written in file.
+		/// </summary>
+		/// <returns>
+		///   The object string as it would be written in file.
+		/// </returns>
+		public abstract override string ToString();
 
 		/// <summary>
 		///   Constructs an object of type T and attempts to deserialize it from file.
@@ -237,16 +233,6 @@ namespace MiCore
 	public abstract class BinarySerializable : IBinarySerializable
 	{
 		/// <summary>
-		///   The object serialized into file data.
-		/// </summary>
-		/// <remarks>
-		///   Used by the default implementation of <see cref="SaveToStream(BinaryWriter)"/>.
-		///   Throws <see cref="InvalidOperationException"/> by default so either override this or, 
-		///   <see cref="SaveToStream(BinaryWriter)"/>.
-		/// </remarks>
-		public virtual byte[] FileData { get { throw new InvalidOperationException(); } }
-
-		/// <summary>
 		///   Attempts to deserialize the object from the stream.
 		/// </summary>
 		/// <param name="sr">
@@ -259,32 +245,13 @@ namespace MiCore
 		/// <summary>
 		///   Attempts to serialize the object to the stream.
 		/// </summary>
-		/// <remarks>
-		///   Default implementation attempts to write <see cref="FileData"/> to stream so either override this or
-		///   <see cref="FileData"/>.
-		/// </remarks>
 		/// <param name="sw">
 		///   Stream writer.
 		/// </param>
 		/// <returns>
 		///   True if serialization succeeded and false otherwise.
 		/// </returns>
-		public virtual bool SaveToStream( BinaryWriter sw )
-		{
-			if( sw == null )
-				return Logger.LogReturn( "Unable to save to a null stream.", false, LogType.Error );
-
-			try
-			{
-				sw.Write( FileData );
-			}
-			catch( Exception e )
-			{
-				return Logger.LogReturn( "Unable to save to stream: " + e.Message + ".", false, LogType.Error );
-			}
-
-			return true;
-		}
+		public abstract bool SaveToStream( BinaryWriter sw );
 
 		/// <summary>
 		///   Constructs an object of type T and attempts to deserialize from file.
@@ -364,6 +331,35 @@ namespace MiCore
 	}
 
 	/// <summary>
+	///   Base class for objects that are be serialized/deserialized to/from 
+	///   xml files procedurally.
+	/// </summary>
+	[Serializable]
+	public abstract class XmlSerializable : IXmlSerializable
+	{
+		/// <summary>
+		///   Attempts to deserialize the object from the stream.
+		/// </summary>
+		/// <param name="sr">
+		///   Stream reader.
+		/// </param>
+		/// <returns>
+		///   True if deserialization succeeded and false otherwise.
+		/// </returns>
+		public abstract bool LoadFromStream( XmlReader sr );
+		/// <summary>
+		///   Attempts to serialize the object to the stream.
+		/// </summary>
+		/// <param name="sw">
+		///   Stream writer.
+		/// </param>
+		/// <returns>
+		///   True if serialization succeeded and false otherwise.
+		/// </returns>
+		public abstract bool SaveToStream( XmlWriter sw );
+	}
+
+	/// <summary>
 	///   Base class for objects that can be loaded from an xml element.
 	/// </summary>
 	[Serializable]
@@ -423,16 +419,18 @@ namespace MiCore
 				string data = xl.ToString().Replace( "\r\n", "\n" );
 				lines = data.Split( '\n' );
 			}
-			string tabs = string.Empty;
-			for( uint i = 0; i < indent; i++ )
-				tabs += "\t";
 
 			StringBuilder sb = new StringBuilder();
 
 			for( int i = 0; i < lines.Length; i++ )
-				sb.Append( tabs + lines[ i ].TrimEnd() + ( i < lines.Length - 1 ? "\n" : "" ) );
+			{
+				if( i + i < lines.Length )
+					sb.AppendLine( lines[ i ].TrimEnd() );
+				else
+					sb.Append( lines[ i ].TrimEnd() );
+			}
 
-			return sb.ToString();
+			return Xml.Indent( sb.ToString(), indent );
 		}
 
 		/// <summary>

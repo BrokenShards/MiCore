@@ -35,56 +35,9 @@ namespace MiCore
 		public Component()
 		:	base()
 		{
-			Parent = null;
-
-			RequiredComponents     = new string[ 0 ];
-			IncompatibleComponents = new string[ 0 ];
-		}
-		/// <summary>
-		///   Constructor.
-		/// </summary>
-		/// <exception cref="InvalidOperationException">
-		///   If any strings in required or incompatible are not registered component type names.
-		///   If required and incompatible contain any of the same type names.
-		/// </exception>
-		public Component( string[] required, string[] incompatible = null )
-		:	base()
-		{
-			Parent = null;
-
-			if( required != null && required.Length > 0 )
-			{
-				for( int i = 0; i < required.Length; i++ )
-					if( !ComponentRegister.Manager.Registered( required[ i ] ) )
-						throw new InvalidOperationException( "Cannot construct component with invalid required type." );
-
-				RequiredComponents = new string[ required.Length ];
-
-				for( int i = 0; i < required.Length; i++ )
-					RequiredComponents[ i ] = new string( required[ i ].ToCharArray() );
-			}
-			else
-				RequiredComponents = new string[ 0 ];
-
-			if( incompatible != null && incompatible.Length > 0 )
-			{
-				for( int i = 0; i < incompatible.Length; i++ )
-				{
-					if( !ComponentRegister.Manager.Registered( incompatible[ i ] ) )
-						throw new InvalidOperationException( "Cannot construct component with invalid incompatible type." );
-
-					for( int j = 0; j < RequiredComponents.Length; j++ )
-						if( incompatible[ i ].Equals( RequiredComponents[ j ] ) )
-							throw new InvalidOperationException( "Component type cannot be required and incompatible." );
-				}
-
-				IncompatibleComponents = new string[ incompatible.Length ];
-
-				for( int i = 0; i < incompatible.Length; i++ )
-					IncompatibleComponents[ i ] = new string( incompatible[ i ].ToCharArray() );
-			}
-			else
-				IncompatibleComponents = new string[ 0 ];
+			Parent                 = null;
+			RequiredComponents     = null;
+			IncompatibleComponents = null;
 		}
 		/// <summary>
 		///   Copy constructor.
@@ -95,10 +48,9 @@ namespace MiCore
 		public Component( Component comp )
 		:	base( comp )
 		{
-			Parent = null;
-
-			RequiredComponents     = new string[ 0 ];
-			IncompatibleComponents = new string[ 0 ];
+			Parent                 = null;
+			RequiredComponents     = null;
+			IncompatibleComponents = null;
 		}
 
 		/// <summary>
@@ -143,7 +95,7 @@ namespace MiCore
 		/// </returns>
 		public bool Requires( string typename )
 		{
-			if( typename != null )
+			if( typename != null && RequiredComponents != null )
 				foreach( string s in RequiredComponents )
 					if( s.Equals( typename ) )
 						return true;
@@ -161,7 +113,7 @@ namespace MiCore
 		/// </returns>
 		public bool Requires( Type type )
 		{
-			if( type == null )
+			if( type == null || RequiredComponents == null )
 				return false;
 
 			string name = null;
@@ -198,7 +150,7 @@ namespace MiCore
 		/// </returns>
 		public bool Incompatible( string typename )
 		{
-			if( typename != null )
+			if( typename != null && IncompatibleComponents != null )
 				foreach( string s in IncompatibleComponents )
 					if( s.Equals( typename ) )
 						return true;
@@ -216,7 +168,7 @@ namespace MiCore
 		/// </returns>
 		public bool Incompatible( Type type )
 		{
-			if( type == null )
+			if( type == null || IncompatibleComponents == null )
 				return false;
 
 			string name = null;
