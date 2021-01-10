@@ -1,5 +1,5 @@
 ﻿////////////////////////////////////////////////////////////////////////////////
-// Entity.cs 
+// ComponentStack.cs 
 ////////////////////////////////////////////////////////////////////////////////
 //
 // MiCore - Core library for my programs and other libraries.
@@ -32,50 +32,74 @@ using SFML.Graphics;
 namespace MiCore
 {
 	/// <summary>
-	///   Base class for all game objects.
+	///   Container for storing related components.
 	/// </summary>
-	public class Entity : MiObject, IIdentifiable<string>, IEnumerable<Component>
+	public class ComponentStack : MiObject, IEnumerable<MiComponent>
 	{
 		/// <summary>
 		///   Constructor.
 		/// </summary>
-		public Entity()
+		public ComponentStack()
 		:	base()
 		{
-			ID           = Identifiable.NewStringID( nameof( Entity ) );
-			m_components = new List<Component>();
+			Parent       = null;
+			m_components = new List<MiComponent>();
 		}
 		/// <summary>
-		///   Constructor setting the object ID.
+		///   Copy constructor.
 		/// </summary>
-		/// <param name="id">
-		///   The object ID. Will be converted to a valid ID if needed.
+		/// <param name="cs">
+		///   The object to copy.
 		/// </param>
-		public Entity( string id )
+		/// <exception cref="InvalidOperationException">
+		///   If unable to add cloned components.
+		/// </exception>
+		public ComponentStack( ComponentStack cs )
+		:	base( cs )
+		{
+			Parent = cs.Parent;
+
+			if( cs.Empty )
+				m_components = new List<MiComponent>();
+			else
+			{
+				m_components = new List<MiComponent>( cs.Count );
+
+				foreach( MiComponent c in cs )
+					if( !Add( (MiComponent)c.Clone(), true ) )
+						throw new InvalidOperationException( "Unable to add coppied component to entity." );
+			}
+		}
+		/// <summary>
+		///   Constructor setting parent entity.
+		/// </summary>
+		/// <param name="parent">
+		///   The owning parent entity
+		/// </param>
+		public ComponentStack( MiEntity parent )
 		:	base()
 		{
-			ID           = id;
-			m_components = new List<Component>();
+			Parent       = parent;
+			m_components = new List<MiComponent>();
 		}
 
 		/// <summary>
-		///   The object ID.
+		///   The owning parent entity.
 		/// </summary>
-		public string ID
+		public MiEntity Parent
 		{
-			get { return m_id; }
-			set { m_id = string.IsNullOrWhiteSpace( value ) ? Identifiable.NewStringID( "Entity" ) : Identifiable.AsValid( value ); }
+			get; set;
 		}
 
 		/// <summary>
-		///   If the entity contains no components.
+		///   If the stack contains any components.
 		/// </summary>
 		public bool Empty
 		{
 			get { return Count == 0; }
 		}
 		/// <summary>
-		///   The amount of components the entity contains.
+		///   The amount of components the stack contains.
 		/// </summary>
 		public int Count
 		{
@@ -83,15 +107,15 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   Checks if the entity contains a component of the given type.
+		///   Checks if the stack contains a component of the given type.
 		/// </summary>
 		/// <typeparam name="T">
 		///   The component type.
 		/// </typeparam>
 		/// <returns>
-		///   True if the entity contains a component with the given type, otherwise false.
+		///   True if the stack contains a component with the given type, otherwise false.
 		/// </returns>
-		public bool Contains<T>() where T : Component, new()
+		public bool Contains<T>() where T : MiComponent, new()
 		{
 			string typename;
 
@@ -101,21 +125,20 @@ namespace MiCore
 			return Contains( typename );
 		}
 		/// <summary>
-		///   Checks if the entity contains a component with the given type name.
+		///   Checks if the stack contains a component with the given type name.
 		/// </summary>
 		/// <param name="type">
 		///   The component type name.
 		/// </param>
 		/// <returns>
-		///   True if the entity contains a component with the given type name, 
-		///   otherwise false.
+		///   True if the stack contains a component with the given type name, otherwise false.
 		/// </returns>
 		public bool Contains( string type )
 		{
 			if( string.IsNullOrWhiteSpace( type ) )
 				return false;
 
-			foreach( Component c in m_components )
+			foreach( MiComponent c in m_components )
 			{
 				if( c == null )
 					continue;
@@ -134,10 +157,10 @@ namespace MiCore
 		///   The component type.
 		/// </typeparam>
 		/// <returns>
-		///   A non-negative index if the entity contains a component with the given type,
+		///   A non-negative index if the stack contains a component with the given type,
 		///   otherwise -1.
 		/// </returns>
-		public int IndexOf<T>() where T : Component, new()
+		public int IndexOf<T>() where T : MiComponent, new()
 		{
 			string typename;
 
@@ -153,7 +176,7 @@ namespace MiCore
 		///   The component type name.
 		/// </param>
 		/// <returns>
-		///   A non-negative index if the entity contains a component with the given type name,
+		///   A non-negative index if the stack contains a component with the given type name,
 		///   otherwise -1.
 		/// </returns>
 		public int IndexOf( string type )
@@ -181,7 +204,7 @@ namespace MiCore
 		/// <returns>
 		///   The component at the given index or null if the index is out of range.
 		/// </returns>
-		public Component Get( int index )
+		public MiComponent Get( int index )
 		{
 			if( index < 0 || index >= Count )
 				return null;
@@ -197,7 +220,7 @@ namespace MiCore
 		/// <returns>
 		///   The component with the given type name if it exists, otherwise null.
 		/// </returns>
-		public Component Get( string typename )
+		public MiComponent Get( string typename )
 		{
 			return Get( IndexOf( typename ) );
 		}
@@ -210,13 +233,13 @@ namespace MiCore
 		/// <returns>
 		///   The component with the given type or null if it does not exist.
 		/// </returns>
-		public T Get<T>() where T : Component, new()
+		public T Get<T>() where T : MiComponent, new()
 		{
 			return Get( IndexOf<T>() ) as T;
 		}
 
 		/// <summary>
-		///   Adds a component to the entity.
+		///   Adds a component to the stack.
 		/// </summary>
 		/// <param name="comp">
 		///   The component to add.
@@ -227,12 +250,12 @@ namespace MiCore
 		/// <returns>
 		///   True if the component was added successfully, otherwise false.
 		/// </returns>
-		public bool Add( Component comp, bool replace = false )
+		public bool Add( MiComponent comp, bool replace = false )
 		{
 			if( comp == null )
 				return false;
 
-			foreach( Component c in m_components )
+			foreach( MiComponent c in m_components )
 				if( c.IncompatibleComponents != null )
 					foreach( string i in c.IncompatibleComponents )
 						if( c.TypeName.Equals( i ) )
@@ -252,12 +275,12 @@ namespace MiCore
 				Remove( comp.TypeName );
 			}
 
-			comp.Parent = this;
+			comp.Stack = this;
 			m_components.Add( comp );
 			return true;
 		}
 		/// <summary>
-		///   Adds a new component to the entity.
+		///   Adds a new component to the stack.
 		/// </summary>
 		/// <typeparam name="T">
 		///   The component type to add.
@@ -268,7 +291,7 @@ namespace MiCore
 		/// <returns>
 		///   True if the component was added successfully, otherwise false.
 		/// </returns>
-		public bool Add<T>( bool replace = false ) where T : Component, new()
+		public bool Add<T>( bool replace = false ) where T : MiComponent, new()
 		{
 			if( !ComponentRegister.Manager.Registered<T>() )
 				return Logger.LogReturn( "Unable to add component: Component is not registered.", false, LogType.Error );
@@ -286,7 +309,7 @@ namespace MiCore
 		///   True if there was a component with the given type and it was removed,
 		///   otherwise false.
 		/// </returns>
-		public bool Remove<T>() where T : Component, new()
+		public bool Remove<T>() where T : MiComponent, new()
 		{
 			return Remove( IndexOf<T>() );
 		}
@@ -334,18 +357,74 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   Clears all components from the entity.
+		///   Releases the component with the given type without disposing it.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type.
+		/// </typeparam>
+		/// <returns>
+		///   The released component or null if nothing was removed.
+		/// </returns>
+		public T Release<T>() where T : MiComponent, new()
+		{
+			return Release( IndexOf<T>() ) as T;
+		}
+		/// <summary>
+		///   Releases the component at the given index.
+		/// </summary>
+		/// <param name="index">
+		///   The component index.
+		/// </param>
+		/// <returns>
+		///   The released component or null if index is out of range.
+		/// </returns>
+		public MiComponent Release( int index )
+		{
+			if( index < 0 || index >= Count )
+				return null;
+
+			List<string> rem = new List<string>();
+
+			for( int i = 0; i < Count; i++ )
+				if( i != index && m_components[ i ].Requires( m_components[ index ].TypeName ) )
+					rem.Add( m_components[ i ].TypeName );
+
+			MiComponent result = m_components[ index ];
+			m_components.RemoveAt( index );
+
+			foreach( string s in rem )
+				Remove( s );
+
+			result.Stack = null;
+			return result;
+		}
+		/// <summary>
+		///   Removes the component with the given type name.
+		/// </summary>
+		/// <param name="typename">
+		///   The component type name.
+		/// </param>
+		/// <returns>
+		///   True if the component existed and was removed successfully.
+		/// </returns>
+		public MiComponent Release( string typename )
+		{
+			return Release( IndexOf( typename ) );
+		}
+
+		/// <summary>
+		///   Clears all components from the stack.
 		/// </summary>
 		public void Clear()
 		{
-			foreach( Component c in m_components )
+			foreach( MiComponent c in m_components )
 				c?.Dispose();
 
 			m_components.Clear();
 		}
 
 		/// <summary>
-		///   Updates the entity and components.
+		///   Updates the stack and components.
 		/// </summary>
 		/// <param name="dt">
 		///   Delta time.
@@ -356,7 +435,7 @@ namespace MiCore
 				m_components[ i ]?.Update( dt );
 		}
 		/// <summary>
-		///   Draws the entity and components.
+		///   Draws the stack and components.
 		/// </summary>
 		/// <param name="target">
 		///   The render target.
@@ -373,7 +452,7 @@ namespace MiCore
 		/// <summary>
 		///   Disposes of the object.
 		/// </summary>
-		public override void Dispose()
+		protected override void OnDispose()
 		{
 			for( int i = 0; i < Count; i++ )
 				m_components[ i ]?.Dispose();
@@ -383,7 +462,7 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   Attempts to deserialize the entity from the stream.
+		///   Attempts to deserialize the object from the stream.
 		/// </summary>
 		/// <param name="sr">
 		///   Stream reader.
@@ -398,10 +477,8 @@ namespace MiCore
 
 			try
 			{
-				ID = sr.ReadString();
 				int count = sr.ReadInt32();
-
-				m_components = new List<Component>( count );
+				m_components = new List<MiComponent>( count );
 
 				for( int i = 0; i < count; i++ )
 				{
@@ -417,7 +494,7 @@ namespace MiCore
 					}
 					else
 					{
-						Component c = ComponentRegister.Manager.Create( type );
+						MiComponent c = ComponentRegister.Manager.Create( type );
 
 						if( !c.LoadFromStream( sr ) )
 							return Logger.LogReturn( "Failed loading entity: Unable to load component from stream.", false, LogType.Error );
@@ -449,7 +526,6 @@ namespace MiCore
 
 			try
 			{
-				sw.Write( ID );
 				sw.Write( Count );
 
 				for( int i = 0; i < Count; i++ )
@@ -480,11 +556,8 @@ namespace MiCore
 		{
 			if( !base.LoadFromXml( element ) )
 				return false;
-			if( !element.HasAttribute( nameof( ID ) ) )
-				return Logger.LogReturn( "Unable to load entity: no ID xml attribute.", false, LogType.Error );
 
 			Clear();
-			ID = element.GetAttribute( nameof( ID ) );
 
 			XmlNodeList comps = element.ChildNodes;
 
@@ -498,7 +571,7 @@ namespace MiCore
 				if( !ComponentRegister.Manager.Registered( e.Name ) )
 					continue;
 
-				Component c = ComponentRegister.Manager.Create( e.Name );
+				MiComponent c = ComponentRegister.Manager.Create( e.Name );
 
 				if( c == null )
 					return Logger.LogReturn( "Unable to load entity: Failed creating component.", false, LogType.Error );
@@ -521,14 +594,9 @@ namespace MiCore
 			StringBuilder sb = new StringBuilder();
 
 			sb.Append( "<" );
-			sb.Append( nameof( Entity ) );
-			sb.Append( " " );
-			sb.Append( nameof( ID ) );
-			sb.Append( "=\"" );
-			sb.Append( ID );
-			sb.AppendLine( "\"" );
+			sb.Append( nameof( ComponentStack ) );
 
-			sb.Append( "        " );
+			sb.Append( " " );
 			sb.Append( nameof( Enabled ) );
 			sb.Append( "=\"" );
 			sb.Append( Enabled );
@@ -544,10 +612,21 @@ namespace MiCore
 				sb.AppendLine( XmlLoadable.ToString( m_components[ i ], 1 ) );
 
 			sb.Append( "</" );
-			sb.Append( nameof( Entity ) );
+			sb.Append( nameof( ComponentStack ) );
 			sb.Append( ">" );
 
 			return sb.ToString();
+		}
+
+		/// <summary>
+		///   Returns a copy of this object.
+		/// </summary>
+		/// <returns>
+		///   A copy of this object.
+		/// </returns>
+		public override object Clone()
+		{
+			return new ComponentStack( this );
 		}
 
 		/// <summary>
@@ -556,16 +635,15 @@ namespace MiCore
 		/// <returns>
 		///   An enumerator that can be used to iterate through the component collection.
 		/// </returns>
-		public IEnumerator<Component> GetEnumerator()
+		public IEnumerator<MiComponent> GetEnumerator()
 		{
-			return ( (IEnumerable<Component>)m_components ).GetEnumerator();
+			return ( (IEnumerable<MiComponent>)m_components ).GetEnumerator();
 		}
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return ( (IEnumerable)m_components ).GetEnumerator();
 		}
 
-		string m_id;
-		List<Component> m_components;
+		List<MiComponent> m_components;
 	}
 }

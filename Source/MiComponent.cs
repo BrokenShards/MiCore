@@ -1,5 +1,5 @@
 ﻿////////////////////////////////////////////////////////////////////////////////
-// Component.cs 
+// MiComponent.cs 
 ////////////////////////////////////////////////////////////////////////////////
 //
 // MiCore - Core library for my programs and other libraries.
@@ -27,15 +27,15 @@ namespace MiCore
 	/// <summary>
 	///   Base class for components.
 	/// </summary>
-	public abstract class Component : MiObject
+	public abstract class MiComponent : MiObject
 	{
 		/// <summary>
 		///   Constructor.
 		/// </summary>
-		public Component()
+		public MiComponent()
 		:	base()
 		{
-			Parent                 = null;
+			Stack                  = null;
 			RequiredComponents     = null;
 			IncompatibleComponents = null;
 		}
@@ -45,10 +45,10 @@ namespace MiCore
 		/// <param name="comp">
 		///   The object to copy.
 		/// </param>
-		public Component( Component comp )
+		public MiComponent( MiComponent comp )
 		:	base( comp )
 		{
-			Parent                 = null;
+			Stack                  = null;
 			RequiredComponents     = null;
 			IncompatibleComponents = null;
 		}
@@ -77,12 +77,20 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   The entity that owns the component.
+		///   The component stack that owns the component.
 		/// </summary>
-		public Entity Parent
+		public ComponentStack Stack
 		{
 			get; set;
 		}
+		/// <summary>
+		///   The entity that owns the component stack.
+		/// </summary>
+		public MiEntity Parent
+		{
+			get { return Stack.Parent; }
+		}
+
 
 		/// <summary>
 		///   Checks if the component requires a component with the given component name.
@@ -133,7 +141,7 @@ namespace MiCore
 		/// <returns>
 		///   True if the component requires on the given component type.
 		/// </returns>
-		public bool Requires<T>() where T : Component, new()
+		public bool Requires<T>() where T : MiComponent, new()
 		{
 			using( T t = new T() )
 				return Requires( t.TypeName );
@@ -188,7 +196,7 @@ namespace MiCore
 		/// <returns>
 		///   True if the component is incompatible with the given component type.
 		/// </returns>
-		public bool Incompatible<T>() where T : Component, new()
+		public bool Incompatible<T>() where T : MiComponent, new()
 		{
 			using( T t = new T() )
 				return Incompatible( t.TypeName );

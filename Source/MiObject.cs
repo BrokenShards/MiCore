@@ -31,7 +31,7 @@ namespace MiCore
 	/// <summary>
 	///   Base interface for ECS objects.
 	/// </summary>
-	public interface IMiObject : IBinarySerializable, IXmlLoadable, Drawable, IDisposable
+	public interface IMiObject : IBinarySerializable, IXmlLoadable, Drawable, ICloneable, IDisposable
 	{
 		/// <summary>
 		///   If the object is enabled and should be updated.
@@ -41,6 +41,11 @@ namespace MiCore
 		///   If the object is visible and should be drawn.
 		/// </summary>
 		bool Visible { get; set; }
+
+		/// <summary>
+		///   If the object has been disposed.
+		/// </summary>
+		bool Disposed { get; }
 
 		/// <summary>
 		///   Updates the object; called once per frame.
@@ -54,27 +59,40 @@ namespace MiCore
 	/// <summary>
 	///   Base class for all ECS objects.
 	/// </summary>
-	public abstract class MiObject : BinarySerializable, IMiObject
+	public abstract class MiObject : BinarySerializable, IMiObject, IEquatable<MiObject>
 	{
 		/// <summary>
 		///   Constructor.
 		/// </summary>
 		public MiObject()
 		{
-			Enabled = true;
-			Visible = true;
+			Enabled  = true;
+			Visible  = true;
+			Disposed = false;
 		}
 		/// <summary>
-		///   Copy constructor; "_Copy" will be appended to the end of the ID.
+		///   Copy constructor.
 		/// </summary>
 		/// <param name="obj">
 		///   The object to copy.
 		/// </param>
+		/// <exception cref="ArgumentNullException">
+		///   If <paramref name="obj"/> is null
+		/// </exception>
 		public MiObject( MiObject obj )
 		{
+			if( obj == null )
+				throw new ArgumentNullException();
+
 			Enabled = obj.Enabled;
 			Visible = obj.Visible;
+			Disposed = obj.Disposed;
 		}
+
+		/// <summary>
+		///   If the object has been disposed.
+		/// </summary>
+		public bool Disposed { get; private set; }
 
 		/// <summary>
 		///   If the object is enabled and should be updated.
@@ -97,7 +115,7 @@ namespace MiCore
 				OnUpdate( dt );
 		}
 		/// <summary>
-		///   Draws the object to the render target if visible.
+		///   Draws the object to the render target if visible; called once per frame.
 		/// </summary>
 		/// <param name="target">
 		///   Render target.
@@ -112,7 +130,7 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   Override this with the object logic.
+		///   Called by <see cref="Update(float)"/> if enabled. Override this with the object logic.
 		/// </summary>
 		/// <param name="dt">
 		///   Delta time.
@@ -120,7 +138,8 @@ namespace MiCore
 		protected virtual void OnUpdate( float dt )
 		{ }
 		/// <summary>
-		///   Override this to draw the object to the render target.
+		///   Called by <see cref="Draw(RenderTarget, RenderStates)"/> if visible. Override this
+		///   to draw your the object to the render target.
 		/// </summary>
 		/// <param name="target">
 		///   Render target.
@@ -147,8 +166,9 @@ namespace MiCore
 
 			try
 			{
-				Enabled = sr.ReadBoolean();
-				Visible = sr.ReadBoolean();
+				Enabled  = sr.ReadBoolean();
+				Visible  = sr.ReadBoolean();
+				Disposed = false;
 			}
 			catch( Exception e )
 			{
@@ -197,8 +217,9 @@ namespace MiCore
 			if( element == null )
 				return Logger.LogReturn( "Unable to load object from null xml element.", false, LogType.Error );
 
-			Enabled = true;
-			Visible = true;
+			Enabled  = true;
+			Visible  = true;
+			Disposed = false;
 
 			if( element.HasAttribute( nameof( Enabled ) ) )
 			{
@@ -221,7 +242,44 @@ namespace MiCore
 		/// <summary>
 		///   Disposes of the object.
 		/// </summary>
-		public virtual void Dispose()
+		public void Dispose()
+		{
+			if( !Disposed )
+			{
+				OnDispose();
+				Disposed = true;
+			}
+		}
+
+		/// <summary>
+		///   Called by Dispose; Override with your disposing and cleanup code if needed.
+		/// </summary>
+		protected virtual void OnDispose()
 		{ }
+
+		/// <summary>
+		///   Returns a deep copy of the object.
+		/// </summary>
+		/// <returns>
+		///   A deep copy of this object.
+		/// </returns>
+		public abstract object Clone();
+
+		/// <summary>
+		///   Checks if this object is equal to another.
+		/// </summary>
+		/// <param name="other">
+		///   The object to check against.
+		/// </param>
+		/// <returns>
+		///   True if the given object is concidered equal to this object, otherwise false.
+		/// </returns>
+		public bool Equals( MiObject other )
+		{
+			return other    != null &&
+			       Enabled  == other.Enabled &&
+				   Visible  == other.Visible &&
+				   Disposed == other.Disposed;
+		}
 	}
 }

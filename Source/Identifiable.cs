@@ -32,7 +32,7 @@ namespace MiCore
 	public interface IIdentifiable<T>
 	{
 		/// <summary>
-		///   The name of the object.
+		///   The object ID.
 		/// </summary>
 		T ID { get; }
 	}
@@ -184,7 +184,7 @@ namespace MiCore
 				s => s[ random.Next( s.Length ) ] ).ToArray() );
 		}
 
-		private static Dictionary<string, ulong> _counter = new Dictionary<string, ulong>();
-		private static Random random = new Random();
+		static Dictionary<string, ulong> _counter = new Dictionary<string, ulong>();
+		static Random random = new Random();
 	}
 }

@@ -41,7 +41,7 @@ namespace MiCore
 		public const string Header = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 
 		/// <summary>
-		///   Gets the vectors' xml string.
+		///   Gets the vector xml string.
 		/// </summary>
 		/// <param name="vec">
 		///   The vector.
@@ -80,7 +80,7 @@ namespace MiCore
 			return Indent( sb.ToString(), indent );
 		}
 		/// <summary>
-		///   Gets the vectors' xml string.
+		///   Gets the vector xml string.
 		/// </summary>
 		/// <param name="vec">
 		///   The vector.
@@ -119,7 +119,7 @@ namespace MiCore
 			return Indent( sb.ToString(), indent );
 		}
 		/// <summary>
-		///   Gets the vectors' xml string.
+		///   Gets the vector xml string.
 		/// </summary>
 		/// <param name="vec">
 		///   The vector.
@@ -159,7 +159,7 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   Gets the rects' xml string.
+		///   Gets the rect xml string.
 		/// </summary>
 		/// <param name="rect">
 		///   The rect.
@@ -209,7 +209,7 @@ namespace MiCore
 			return Indent( sb.ToString(), indent );
 		}
 		/// <summary>
-		///   Gets the rects' xml string.
+		///   Gets the rect xml string.
 		/// </summary>
 		/// <param name="rect">
 		///   The rect.
@@ -260,7 +260,7 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   Gets the rects' xml string.
+		///   Gets the rect xml string.
 		/// </summary>
 		/// <param name="col">
 		///   The rect.
@@ -311,7 +311,7 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   Gets the video modes' xml string.
+		///   Gets the video mode xml string.
 		/// </summary>
 		/// <param name="vm">
 		///   The video mode.
@@ -574,13 +574,13 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   Attempts to load a color from an xml element.
+		///   Attempts to load a video mode from an xml element.
 		/// </summary>
 		/// <param name="ele">
 		///   The element to load from.
 		/// </param>
 		/// <returns>
-		///   A valid color on success or null on failure.
+		///   A valid video mode on success or null on failure.
 		/// </returns>
 		public static VideoMode? ToVideoMode( XmlElement ele )
 		{

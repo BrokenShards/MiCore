@@ -27,7 +27,7 @@ using System.Collections.Generic;
 namespace MiCore
 {
 	/// <summary>
-	///   Used for registering components.
+	///   Used for registering and creating components.
 	/// </summary>
 	public class ComponentRegister : IEnumerable<KeyValuePair<string, Type>>
 	{
@@ -40,7 +40,7 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   The singleton object.
+		///   The register object.
 		/// </summary>
 		public static ComponentRegister Manager
 		{
@@ -85,7 +85,7 @@ namespace MiCore
 		/// <returns>
 		///   True if the given component type is registered, otherwise false.
 		/// </returns>
-		public bool Registered<T>() where T : Component, new()
+		public bool Registered<T>() where T : MiComponent, new()
 		{
 			return Registered( typeof( T ) );
 		}
@@ -131,7 +131,7 @@ namespace MiCore
 		/// <returns>
 		///   True if the component type was registered successfully and false otherwise.
 		/// </returns>
-		public bool Register<T>() where T : Component, new()
+		public bool Register<T>() where T : MiComponent, new()
 		{
 			string name;
 
@@ -149,6 +149,41 @@ namespace MiCore
 			return true;
 		}
 		/// <summary>
+		///   Registers a component type.
+		/// </summary>
+		/// <param name="type">
+		///   The component type.
+		/// </param>
+		/// <returns>
+		///   True if type is a valid component type and was registered successfully, otherwise 
+		///   null.
+		/// </returns>
+		public bool Register( Type type )
+		{
+			if( type == null )
+				return Logger.LogReturn( "Unable to register null component type.", false, LogType.Error );
+			if( type.IsSubclassOf( typeof( MiComponent ) ) )
+				return Logger.LogReturn( "Unable to register non-component type as component.", false, LogType.Error );
+
+			try
+			{
+				using( MiComponent c = (MiComponent)Activator.CreateInstance( type ) )
+				{
+					if( m_typemap.ContainsKey( c.TypeName ) )
+						m_typemap[ c.TypeName ] = type;
+					else
+						m_typemap.Add( c.TypeName, type );
+				}
+			}
+			catch( Exception e )
+			{
+				return Logger.LogReturn( "Unable to register component type: " + e.Message, false, LogType.Error );
+			}
+
+			return true;
+		}
+		
+		/// <summary>
 		///   Creates a new component of the given type.
 		/// </summary>
 		/// <typeparam name="T">
@@ -157,7 +192,7 @@ namespace MiCore
 		/// <returns>
 		///   A new component of the given type or null if unregistered or unable to create.
 		/// </returns>
-		public T Create<T>() where T : Component, new()
+		public T Create<T>() where T : MiComponent, new()
 		{
 			string name;
 
@@ -180,7 +215,6 @@ namespace MiCore
 
 			return c;
 		}
-
 		/// <summary>
 		///   Creates a component from a given type name.
 		/// </summary>
@@ -190,7 +224,7 @@ namespace MiCore
 		/// <returns>
 		///   A new component if the type name was registered, otherwise false.
 		/// </returns>
-		public Component Create( string typename )
+		public MiComponent Create( string typename )
 		{
 			if( !Registered( typename ) )
 				return null;
@@ -206,12 +240,12 @@ namespace MiCore
 		/// <returns>
 		///  A new component if the type was registered, otherwise null.
 		/// </returns>
-		public Component Create( Type type )
+		public MiComponent Create( Type type )
 		{
 			if( type == null )
-				return Logger.LogReturn<Component>( "Unable to create component from null type.", null, LogType.Error );
+				return Logger.LogReturn<MiComponent>( "Unable to create component from null type.", null, LogType.Error );
 			
-			Component c;
+			MiComponent c;
 
 			string name = null;
 
@@ -220,15 +254,15 @@ namespace MiCore
 					name = new string( v.Key.ToCharArray() );
 
 			if( name == null )
-				return Logger.LogReturn<Component>( "Unable to create component from unregistered type.", null, LogType.Error );
+				return Logger.LogReturn<MiComponent>( "Unable to create component from unregistered type.", null, LogType.Error );
 
 			try
 			{
-				c = (Component)Activator.CreateInstance( m_typemap[ name ] );
+				c = (MiComponent)Activator.CreateInstance( m_typemap[ name ] );
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<Component>( "Unable to create component: " + e.Message, null, LogType.Error );
+				return Logger.LogReturn<MiComponent>( "Unable to create component: " + e.Message, null, LogType.Error );
 			}
 
 			return c;

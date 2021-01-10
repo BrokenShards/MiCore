@@ -48,6 +48,7 @@ namespace MiCore
 		/// </returns>
 		protected abstract bool OnTest();
 	}
+
 	/// <summary>
 	///   Base class for test modules that also require a visual test.
 	/// </summary>

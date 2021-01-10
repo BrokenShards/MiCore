@@ -58,15 +58,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Source\Component.cs" />
+    <Compile Include="Source\JobList.cs" />
+    <Compile Include="Source\MiComponent.cs" />
     <Compile Include="Source\ComponentRegister.cs" />
+    <Compile Include="Source\ComponentStack.cs" />
     <Compile Include="Source\Database.cs" />
     <Compile Include="Source\DatabaseManager.cs" />
-    <Compile Include="Source\Entity.cs" />
+    <Compile Include="Source\MiEntity.cs" />
     <Compile Include="Source\Identifiable.cs" />
+    <Compile Include="Source\JobManager.cs" />
+    <Compile Include="Source\MiJob.cs" />
     <Compile Include="Source\Logger.cs" />
     <Compile Include="Source\MiObject.cs" />
     <Compile Include="Source\Namable.cs" />
+    <Compile Include="Source\MiNode.cs" />
     <Compile Include="Source\Serializable.cs" />
     <Compile Include="Source\TestModule.cs" />
     <Compile Include="Source\Xml.cs" />

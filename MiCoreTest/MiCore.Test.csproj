@@ -57,8 +57,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Tests\ECSTest.cs" />
+    <Compile Include="Tests\IDTest.cs" />
+    <Compile Include="Tests\NameTest.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tests\SerializableTest.cs" />
+    <Compile Include="Tests\XmlTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
