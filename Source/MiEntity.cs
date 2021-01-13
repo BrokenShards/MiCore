@@ -26,6 +26,7 @@ using System.Text;
 using System.Xml;
 
 using SFML.Graphics;
+using SFML.Window;
 
 namespace MiCore
 {
@@ -41,6 +42,7 @@ namespace MiCore
 		:	base()
 		{
 			Components = new ComponentStack( this );
+			Window     = null;
 		}
 		/// <summary>
 		///   Copy constructor.
@@ -56,20 +58,52 @@ namespace MiCore
 		{
 			Components = new ComponentStack( ent.Components );
 			Components.Parent = this;
+			Window = ent.Window;
 		}
 		/// <summary>
-		///   Constructor setting the object ID.
+		///   Constructor setting the target render window.
+		/// </summary>
+		/// <param name="window">
+		///   The target window.
+		/// </param>
+		public MiEntity( RenderWindow window )
+		:	base()
+		{
+			Components = new ComponentStack( this );
+			Window     = window;
+		}
+		/// <summary>
+		///   Constructor setting the object ID and optionally the target render window.
 		/// </summary>
 		/// <param name="id">
-		///   The object ID. Will be converted to a valid ID if needed.
+		///   The object ID.
+		/// </param>
+		/// <param name="window">
+		///   The target window.
+		/// </param>
+		public MiEntity( string id, RenderWindow window = null )
+		:	base( id )
+		{
+			Components = new ComponentStack( this );
+			Window     = window;
+		}
+		/// <summary>
+		///   Constructor setting the object ID, name and optionally the target render window.
+		/// </summary>
+		/// <param name="id">
+		///   The object ID.
 		/// </param>
 		/// <param name="name">
-		///   The object name or null to generate a ne. Will be corrected if needed.
+		///   The object name.
 		/// </param>
-		public MiEntity( string id, string name = null )
+		/// <param name="window">
+		///   The target window.
+		/// </param>
+		public MiEntity( string id, string name, RenderWindow window = null )
 		:	base( id, name )
 		{
 			Components = new ComponentStack( this );
+			Window     = window;
 		}
 
 		/// <summary>
@@ -78,6 +112,43 @@ namespace MiCore
 		public ComponentStack Components
 		{
 			get; private set;
+		}
+		/// <summary>
+		///   A reference to the target render window.
+		/// </summary>
+		public RenderWindow Window
+		{
+			get { return m_window; }
+			set
+			{
+				m_window = value;
+
+				if( HasChildren )
+					foreach( MiEntity e in Children )
+						if( e != null )
+							e.Window = value;
+			}
+		}
+
+		/// <summary>
+		///   To be called on TextEntered event. Calls <see cref="MiComponent.OnTextEntered(TextEventArgs)"/>
+		///   for all enabled components for this entity and all child entities.
+		/// </summary>
+		/// <param name="e">
+		///   The event args.
+		/// </param>
+		public void TextEntered( TextEventArgs e )
+		{
+			if( e != null && Enabled )
+			{
+				foreach( MiComponent c in Components )
+					c.TextEntered( e );
+
+				if( HasChildren )
+					foreach( MiEntity en in AllChildren )
+						foreach( MiComponent c in en.Components )
+							c.TextEntered( e );
+			}
 		}
 
 		/// <summary>
@@ -92,7 +163,10 @@ namespace MiCore
 			Components.Update( dt );
 
 			foreach( MiEntity e in this )
+			{
+				e.Window = Window;
 				e.Update( dt );
+			}
 		}
 		/// <summary>
 		///   Draws the component stack and children.
@@ -119,6 +193,7 @@ namespace MiCore
 		{
 			Components.Dispose();
 			base.OnDispose();
+			Window = null;
 		}
 
 		/// <summary>
@@ -263,5 +338,7 @@ namespace MiCore
 		{
 			return new MiEntity( this );
 		}
+
+		RenderWindow m_window;
 	}
 }

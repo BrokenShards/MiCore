@@ -37,19 +37,19 @@ namespace MiCore.Test
 			public SizeComponent()
 			:	base()
 			{
-				Width = 1.0f;
+				Width  = 1.0f;
 				Height = 1.0f;
 			}
 			public SizeComponent( float w, float h )
 			:	base()
 			{
-				Width = w;
+				Width  = w;
 				Height = h;
 			}
 			public SizeComponent( SizeComponent c )
 			:	base( c )
 			{
-				Width = c?.Width ?? 1.0f;
+				Width  = c?.Width  ?? 1.0f;
 				Height = c?.Height ?? 1.0f;
 			}
 
@@ -160,7 +160,7 @@ namespace MiCore.Test
 				StringBuilder sb = new StringBuilder();
 
 				sb.Append( '<' );
-				sb.Append( nameof( SizeComponent ) );
+				sb.Append( TypeName );
 				sb.Append( " " );
 				sb.Append( nameof( Enabled ) );
 				sb.Append( "=\"" );
@@ -204,6 +204,8 @@ namespace MiCore.Test
 			public ScaleComponent()
 			:	base()
 			{
+				Scale = 1.0f;
+
 				// Here we add the names of any components that are required by this component to
 				// `RequiredComponents`. When adding this component to an entity, these required
 				// components will also be added if needed.
@@ -211,8 +213,6 @@ namespace MiCore.Test
 
 				// The opposite of `RequiredComponents` is `IncompatibleComponents`, any components
 				// named in it cannot be added to an entity containing this component.
-
-				Scale = 1.0f;
 			}
 			public ScaleComponent( float scl )
 			:	base()
@@ -433,7 +433,7 @@ namespace MiCore.Test
 					// Trying to add a new component to the stack of a given type. This will add any
 					// components named in `RequiredComponents` too. This will fail if the stack
 					// already contains a component named in `IncompatibleComponents`.
-					if( !stack.Add<ScaleComponent>() )
+					if( !stack.AddNew<ScaleComponent>() )
 						return Logger.LogReturn( "Failed: Unable to add ScaleComponent.", false, LogType.Error );
 
 					// Checking if the stack contains a component of a given type.
@@ -514,12 +514,14 @@ namespace MiCore.Test
 
 		class JobTest : TestModule
 		{
-			static int runcount;
+			static int runcount = 0;
+			static readonly object _lock = new object();
 
 			// Test function for the job to run.
 			static void TestDelegate( MiEntity e )
 			{
-				runcount++;
+				lock( _lock )
+					runcount++;
 			}
 
 			protected override bool OnTest()
@@ -539,48 +541,55 @@ namespace MiCore.Test
 				// Run the job on the entity.
 				job.Run( ent );
 
+				int totalruns = ent.ChildCount + 1;
+
 				// Ensuring job ran successfully.
-				if( runcount != ent.ChildCount + 1 )
-					return Logger.LogReturn( "Failed! Job did not run.", false, LogType.Error );
+				if( runcount != totalruns )
+					return Logger.LogReturn( "Failed! Job missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
 
 				runcount = 0;
 
 				// Run the job asyncronously on the entity. We call `Wait` here to wait for the task
 				// to finish so it can be called syncronously.
 				job.RunASync( ent ).Wait();
-				Thread.Sleep( 1000 );
 
 				// Ensuring job ran successfully.
-				if( runcount != ent.ChildCount + 1 )
-					return Logger.LogReturn( "Failed! job did not run.", false, LogType.Error );
+				if( runcount != totalruns )
+					return Logger.LogReturn( "Failed! ASync job missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
 
 				return Logger.LogReturn( "Success!", true );
 			}
 		}
 		class JobListTest : TestModule
 		{
-			static int runcount;
+			static int runcount = 0;
+			static readonly object _lock = new object();
 
 			// Test functions for the job list to run.
 			static void TestDelegate1( MiEntity e )
 			{
-				runcount++;
+				lock( _lock )
+					runcount++;
 			}
 			static void TestDelegate2( MiEntity e )
 			{
-				runcount++;
+				lock( _lock )
+					runcount++;
 			}
 			static void TestDelegate3( MiEntity e )
 			{
-				runcount++;
+				lock( _lock )
+					runcount++;
 			}
 			static void TestDelegate4( MiEntity e )
 			{
-				runcount++;
+				lock( _lock )
+					runcount++;
 			}
 			static void TestDelegate5( MiEntity e )
 			{
-				runcount++;
+				lock( _lock )
+					runcount++;
 			}
 
 			protected override bool OnTest()
@@ -610,48 +619,55 @@ namespace MiCore.Test
 				// Run the job list on the entity.
 				list.Run( ent );
 
+				int totalruns = ( ent.ChildCount + 1 ) * list.Count;
+
 				// Ensuring job ran successfully.
-				if( runcount != ( ent.ChildCount + 1 ) * list.Count )
-					return Logger.LogReturn( "Failed! Jobs did not run.", false, LogType.Error );
+				if( runcount != totalruns )
+					return Logger.LogReturn( "Failed! JobList missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
 
 				runcount = 0;
 
 				// Run the job list asyncronously on the entity. We call `Wait` here to wait for the
 				// task to finish so it can be called syncronously.
 				list.RunASync( ent ).Wait();
-				Thread.Sleep( 1000 );
 
 				// Ensuring job ran successfully.
-				if( runcount != ( ent.ChildCount + 1 ) * list.Count )
-					return Logger.LogReturn( "Failed! ASync jobs did not run.", false, LogType.Error );
+				if( runcount != totalruns )
+					return Logger.LogReturn( "Failed! ASync JobList missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
 
 				return Logger.LogReturn( "Success!", true );
 			}
 		}
 		class JobManagerTest : TestModule
 		{
-			static int runcount;
+			static int runcount = 0;
+			static readonly object _lock = new object();
 
 			// Test functions for the job list to run.
 			static void TestDelegate1( MiEntity e )
 			{
-				runcount++;
+				lock( _lock )
+					runcount++;
 			}
 			static void TestDelegate2( MiEntity e )
 			{
-				runcount++;
+				lock( _lock )
+					runcount++;
 			}
 			static void TestDelegate3( MiEntity e )
 			{
-				runcount++;
+				lock( _lock )
+					runcount++;
 			}
 			static void TestDelegate4( MiEntity e )
 			{
-				runcount++;
+				lock( _lock )
+					runcount++;
 			}
 			static void TestDelegate5( MiEntity e )
 			{
-				runcount++;
+				lock( _lock )
+					runcount++;
 			}
 
 			protected override bool OnTest()
@@ -697,20 +713,21 @@ namespace MiCore.Test
 				// Run all jobs in the manager in priority order on the entity.
 				man.RunAll( ent );
 
+				int totalruns = ( ent.ChildCount + 1 ) * man.Count;
+
 				// Ensuring job ran successfully.
-				if( runcount != ( ent.ChildCount + 1 ) * man.Count )
-					return Logger.LogReturn( "Failed! Jobs did not run.", false, LogType.Error );
+				if( runcount != totalruns )
+					return Logger.LogReturn( "Failed! JobManager missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
 
 				runcount = 0;
 
 				// Run all jobs in the manager in priority order asyncronously on the entity. We 
 				// call `Wait` here to wait for the task to finish so it can be called syncronously.
 				man.RunAllASync( ent ).Wait();
-				Thread.Sleep( 1000 );
 
 				// Ensuring job ran successfully.
-				if( runcount != ( ent.ChildCount + 1 ) * man.Count )
-					return Logger.LogReturn( "Failed! ASync jobs did not run.", false, LogType.Error );
+				if( runcount != totalruns )
+					return Logger.LogReturn( "Failed! ASync JobManager missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
 
 				return Logger.LogReturn( "Success!", true );
 			}

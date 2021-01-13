@@ -21,6 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using SFML.Window;
 
 namespace MiCore
 {
@@ -201,5 +202,26 @@ namespace MiCore
 			using( T t = new T() )
 				return Incompatible( t.TypeName );
 		}
+
+		/// <summary>
+		///   Called on TextEntered event.
+		/// </summary>
+		/// <param name="e">
+		///   The event args.
+		/// </param>
+		public void TextEntered( TextEventArgs e )
+		{
+			if( e != null && Enabled )
+				OnTextEntered( e );
+		}
+
+		/// <summary>
+		///   Override this with your TextEntered logic.
+		/// </summary>
+		/// <param name="e">
+		///   The event args.
+		/// </param>
+		protected virtual void OnTextEntered( TextEventArgs e )
+		{ }
 	}
 }

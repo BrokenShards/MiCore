@@ -67,7 +67,7 @@ namespace MiCore
 
 				foreach( MiComponent c in cs )
 					if( !Add( (MiComponent)c.Clone(), true ) )
-						throw new InvalidOperationException( "Unable to add coppied component to entity." );
+						throw new InvalidOperationException( "Unable to add coppied component to ComponentStack." );
 			}
 		}
 		/// <summary>
@@ -107,6 +107,99 @@ namespace MiCore
 		}
 
 		/// <summary>
+		///   Creates an array containing the names of all components incompatible with the existing
+		///   components.
+		/// </summary>
+		public string[] GetIncompatibleComponents()
+		{
+			List<string> list = new List<string>();
+
+			bool ContainsString( string s )
+			{
+				if( !Identifiable.IsValid( s ) )
+					return false;
+
+				foreach( string l in list )
+					if( l.Equals( s ) )
+						return true;
+
+				return false;
+			}
+
+			foreach( MiComponent c in m_components )
+			{
+				if( c.IncompatibleComponents == null )
+					continue;
+
+				foreach( string i in c.IncompatibleComponents )
+					if( !ContainsString( i ) )
+						list.Add( i );
+			}
+
+			return list.ToArray();
+		}
+
+		/// <summary>
+		///   Checks if a given component type is compatible with the current components.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type.
+		/// </typeparam>
+		/// <returns>
+		///   True if the component type is registered, compatible and can be added, otherwise false.
+		/// </returns>
+		public bool IsCompatible<T>() where T : MiComponent, new()
+		{
+			using( T t = new T() )
+				return IsCompatible( t );
+		}
+		/// <summary>
+		///   Checks if a given component type name is compatible with the current components.
+		/// </summary>
+		/// <param name="typename">
+		///   The component type name.
+		/// </param>
+		/// <returns>
+		///   True if the component type is registered, compatible and can be added, otherwise false.
+		/// </returns>
+		public bool IsCompatible( string typename )
+		{
+			if( typename == null || !ComponentRegister.Manager.Registered( typename ) )
+				return false;
+
+			string[] incomp = GetIncompatibleComponents();
+
+			foreach( string s in incomp )
+				if( s.Equals( typename ) )
+					return false;
+
+			return true;
+		}
+		/// <summary>
+		///   Checks if a given component and its required components are compatible with the 
+		///   current components.
+		/// </summary>
+		/// <param name="comp">
+		///   The component.
+		/// </param>
+		/// <returns>
+		///   True if the component and its requirements are registered, compatible and can be 
+		///   added, otherwise false.
+		/// </returns>
+		public bool IsCompatible( MiComponent comp )
+		{
+			if( comp == null || !IsCompatible( comp.TypeName ) )
+				return false;
+
+			if( comp.RequiredComponents != null )
+				foreach( string s in comp.RequiredComponents )
+					if( !IsCompatible( s ) )
+						return false;
+
+			return true;
+		}
+
+		/// <summary>
 		///   Checks if the stack contains a component of the given type.
 		/// </summary>
 		/// <typeparam name="T">
@@ -120,7 +213,7 @@ namespace MiCore
 			string typename;
 
 			using( T t = new T() )
-				typename = t.TypeName;
+				typename = new string( t.TypeName.ToCharArray() );
 
 			return Contains( typename );
 		}
@@ -239,6 +332,47 @@ namespace MiCore
 		}
 
 		/// <summary>
+		///   Adds a new component to the stack.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type to add.
+		/// </typeparam>
+		/// <param name="replace">
+		///   Should an already existing component of the same type be replaced?
+		/// </param>
+		/// <returns>
+		///   True if the component was added successfully, otherwise false.
+		/// </returns>
+		public bool AddNew<T>( bool replace = false ) where T : MiComponent, new()
+		{
+			if( !ComponentRegister.Manager.Registered<T>() )
+				return Logger.LogReturn( "Unable to add component: Component is not registered.", false, LogType.Error );
+
+			return Add( ComponentRegister.Manager.Create<T>(), replace );
+		}
+		/// <summary>
+		///   Adds a new existing component to the stack.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type to add.
+		/// </typeparam>
+		/// <param name="comp">
+		///   The component to add.
+		/// </param>
+		/// <param name="replace">
+		///   Should an already existing component of the same type be replaced?
+		/// </param>
+		/// <returns>
+		///   True if the component was added successfully, otherwise false.
+		/// </returns>
+		public bool Add<T>( T comp, bool replace = false ) where T : MiComponent, new()
+		{
+			if( !ComponentRegister.Manager.Registered<T>() )
+				return Logger.LogReturn( "Unable to add component: Component is not registered.", false, LogType.Error );
+
+			return Add( (MiComponent)comp, replace );
+		}
+		/// <summary>
 		///   Adds a component to the stack.
 		/// </summary>
 		/// <param name="comp">
@@ -252,20 +386,10 @@ namespace MiCore
 		/// </returns>
 		public bool Add( MiComponent comp, bool replace = false )
 		{
-			if( comp == null )
+			if( !IsCompatible( comp ) )
 				return false;
-
-			foreach( MiComponent c in m_components )
-				if( c.IncompatibleComponents != null )
-					foreach( string i in c.IncompatibleComponents )
-						if( c.TypeName.Equals( i ) )
-							return Logger.LogReturn( "Unable to add component: Entity contains incompatible components.", false, LogType.Error );
-
-			if( comp.RequiredComponents != null )
-				foreach( string r in comp.RequiredComponents )
-					if( !Contains( r ) )
-						if( !Add( ComponentRegister.Manager.Create( r ) ) )
-							return Logger.LogReturn( "Unable to add component to Entity.", false, LogType.Error );
+			if( m_components.Contains( comp ) )
+				return true;
 
 			if( Contains( comp.TypeName ) )
 			{
@@ -275,28 +399,227 @@ namespace MiCore
 				Remove( comp.TypeName );
 			}
 
+			if( comp.RequiredComponents != null )
+				foreach( string r in comp.RequiredComponents )
+					if( !Contains( r ) )
+						if( !Add( ComponentRegister.Manager.Create( r ) ) )
+							return false;
+
 			comp.Stack = this;
 			m_components.Add( comp );
 			return true;
 		}
+
 		/// <summary>
-		///   Adds a new component to the stack.
+		///   Adds a range of components to the stack.
+		/// </summary>
+		/// <param name="comps">
+		///   The component range to add.
+		/// </param>
+		/// <param name="replace">
+		///   If an already existing component should be replaced.
+		/// </param>
+		/// <returns>
+		///   True if comps is not null and all componenta were added successfully, otherwise false.
+		/// </returns>
+		public bool AddRange( IEnumerable<MiComponent> comps, bool replace = false )
+		{
+			if( comps == null )
+				return false;
+
+			foreach( MiComponent c in comps )
+				if( !Add( c, replace ) )
+					return false;
+
+			return true;
+		}
+		/// <summary>
+		///   Clones and adds a range of components from another stack.
+		/// </summary>
+		/// <param name="stack">
+		///   The component stack to add.
+		/// </param>
+		/// <param name="replace">
+		///   If an already existing component should be replaced.
+		/// </param>
+		/// <returns>
+		///   True if stack is not null and all componenta were added successfully, otherwise false.
+		/// </returns>
+		public bool AddRange( ComponentStack stack, bool replace = false )
+		{
+			if( stack == null )
+				return false;
+
+			foreach( MiComponent c in stack )
+				if( !Add( (MiComponent)c.Clone(), replace ) )
+					return false;
+
+			return true;
+		}
+
+		/// <summary>
+		///   Inserts a component at the given index in the stack.
+		/// </summary>
+		/// <param name="index">
+		///   The index to insert the component. <see cref="Add(MiComponent, bool)"/> will be called
+		///   instead if equals to <see cref="Count"/>.
+		/// </param>
+		/// <param name="comp">
+		///   The component to add.
+		/// </param>
+		/// <param name="replace">
+		///   Should an alreadu existing component of the same type be replaced?
+		/// </param>
+		/// <returns>
+		///   True if the component was inserted successfully, otherwise false.
+		/// </returns>
+		public bool Insert( int index, MiComponent comp, bool replace = false )
+		{
+			if( comp == null || index < 0 || index > Count || !IsCompatible( comp ) )
+				return false;
+			if( index == Count )
+				return Add( comp, replace );
+			if( m_components.Contains( comp ) )
+				return Insert( index, Release( comp.TypeName ), replace );
+
+			if( Contains( comp.TypeName ) )
+			{
+				if( !replace )
+					return false;
+
+				int i = IndexOf( comp.TypeName );
+
+				if( i < index )
+					index--;
+
+				Remove( comp.TypeName );
+			}
+
+			if( comp.RequiredComponents != null )
+				foreach( string r in comp.RequiredComponents )
+					if( !Contains( r ) )
+						if( !Add( ComponentRegister.Manager.Create( r ) ) )
+							return Logger.LogReturn( "Unable to add component to Entity.", false, LogType.Error );
+
+			comp.Stack = this;
+			m_components.Insert( index, comp );
+			return true;
+		}
+		/// <summary>
+		///   Inserts a component at the given index in the stack.
 		/// </summary>
 		/// <typeparam name="T">
 		///   The component type to add.
 		/// </typeparam>
+		/// <param name="index">
+		///   The index to insert the component.
+		/// </param>
+		/// <param name="comp">
+		///   The component to add.
+		/// </param>
 		/// <param name="replace">
 		///   Should an already existing component of the same type be replaced?
 		/// </param>
 		/// <returns>
 		///   True if the component was added successfully, otherwise false.
 		/// </returns>
-		public bool Add<T>( bool replace = false ) where T : MiComponent, new()
+		public bool Insert<T>( int index, T comp, bool replace = false ) where T : MiComponent, new()
 		{
 			if( !ComponentRegister.Manager.Registered<T>() )
 				return Logger.LogReturn( "Unable to add component: Component is not registered.", false, LogType.Error );
 
-			return Add( ComponentRegister.Manager.Create<T>(), replace );
+			return Insert( index, (MiComponent)comp, replace );
+		}
+		/// <summary>
+		///   Inserts a component at the given index in the stack.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type to add.
+		/// </typeparam>
+		/// <param name="index">
+		///   The index to insert the component.
+		/// </param>
+		/// <param name="replace">
+		///   Should an already existing component of the same type be replaced?
+		/// </param>
+		/// <returns>
+		///   True if the component was added successfully, otherwise false.
+		/// </returns>
+		public bool InsertNew<T>( int index, bool replace = false ) where T : MiComponent, new()
+		{
+			if( !ComponentRegister.Manager.Registered<T>() )
+				return Logger.LogReturn( "Unable to add component: Component is not registered.", false, LogType.Error );
+
+			return Insert( index, ComponentRegister.Manager.Create<T>(), replace );
+		}
+
+		/// <summary>
+		///   Inserts a range of components to the stack at the given index.
+		/// </summary>
+		/// <param name="index">
+		///   The index to insert the components.
+		/// </param>
+		/// <param name="comps">
+		///   The component range to add.
+		/// </param>
+		/// <param name="replace">
+		///   If an already existing component should be replaced.
+		/// </param>
+		/// <returns>
+		///   True if comps is not null and all componenta were added successfully, otherwise false.
+		/// </returns>
+		public bool InsertRange( int index, IEnumerable<MiComponent> comps, bool replace = false )
+		{
+			if( comps == null || index < 0 || index > Count )
+				return false;
+			if( index == Count )
+				return AddRange( comps, replace );
+
+			int i = index;
+
+			foreach( MiComponent c in comps )
+			{
+				if( !Insert( i, c, replace ) )
+					return false;
+
+				i++;
+			}
+
+			return true;
+		}
+		/// <summary>
+		///   Inserts a range of components from another stack at the given index.
+		/// </summary>
+		/// <param name="index">
+		///   The index to insert the components.
+		/// </param>
+		/// <param name="stack">
+		///   The component stack to add.
+		/// </param>
+		/// <param name="replace">
+		///   If an already existing component should be replaced.
+		/// </param>
+		/// <returns>
+		///   True if stack is not null and all componenta were added successfully, otherwise false.
+		/// </returns>
+		public bool InsertRange( int index, ComponentStack stack, bool replace = false )
+		{
+			if( stack == null || index < 0 || index > Count )
+				return false;
+			if( index == Count )
+				return AddRange( stack, replace );
+
+			int i = index;
+
+			foreach( MiComponent c in stack )
+			{
+				if( !Insert( i, (MiComponent)c.Clone(), replace ) )
+					return false;
+
+				i++;
+			}
+
+			return true;
 		}
 
 		/// <summary>
@@ -485,27 +808,27 @@ namespace MiCore
 					string type = sr.ReadString();
 
 					if( !ComponentRegister.Manager.Registered( type ) )
-						return Logger.LogReturn( "Failed loading entity: Saved entity contains unregistered component name.", false, LogType.Error );
+						return Logger.LogReturn( "Failed loading ComponentStack: Saved object contains unregistered component name.", false, LogType.Error );
 
 					if( Contains( type ) )
 					{
 						if( !Get( type ).LoadFromStream( sr ) )
-							return Logger.LogReturn( "Failed loading entity: Unable to load component from stream.", false, LogType.Error );
+							return Logger.LogReturn( "Failed loading ComponentStack: Unable to load component from stream.", false, LogType.Error );
 					}
 					else
 					{
 						MiComponent c = ComponentRegister.Manager.Create( type );
 
 						if( !c.LoadFromStream( sr ) )
-							return Logger.LogReturn( "Failed loading entity: Unable to load component from stream.", false, LogType.Error );
+							return Logger.LogReturn( "Failed loading ComponentStack: Unable to load component from stream.", false, LogType.Error );
 						if( Add( c ) )
-							return Logger.LogReturn( "Failed loading entity: Unable to add component loaded from stream.", false, LogType.Error );
+							return Logger.LogReturn( "Failed loading ComponentStack: Unable to add component loaded from stream.", false, LogType.Error );
 					}
 				}
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Failed loading entity from stream: " + e.Message, false, LogType.Error );
+				return Logger.LogReturn( "Failed loading ComponentStack from stream: " + e.Message, false, LogType.Error );
 			}
 
 			return true;
@@ -533,12 +856,12 @@ namespace MiCore
 					sw.Write( m_components[ i ].TypeName );
 					
 					if( !m_components[ i ].SaveToStream( sw ) )
-						return Logger.LogReturn( "Failed saving entity: Unable to save component to stream.", false, LogType.Error );
+						return Logger.LogReturn( "Failed saving ComponentStack: Unable to save component to stream.", false, LogType.Error );
 				}
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Unable to save entity to stream: " + e.Message, false, LogType.Error );
+				return Logger.LogReturn( "Unable to save ComponentStack to stream: " + e.Message, false, LogType.Error );
 			}
 
 			return true;
@@ -574,11 +897,11 @@ namespace MiCore
 				MiComponent c = ComponentRegister.Manager.Create( e.Name );
 
 				if( c == null )
-					return Logger.LogReturn( "Unable to load entity: Failed creating component.", false, LogType.Error );
+					return Logger.LogReturn( "Unable to load ComponentStack: Failed creating component.", false, LogType.Error );
 				if( !c.LoadFromXml( e ) )
-					return Logger.LogReturn( "Unable to load entity: Failed parsing component.", false, LogType.Error );
+					return Logger.LogReturn( "Unable to load ComponentStack: Failed parsing component.", false, LogType.Error );
 				if( !Add( c ) )
-					return Logger.LogReturn( "Unable to load entity: Failed adding component.", false, LogType.Error );
+					return Logger.LogReturn( "Unable to load ComponentStack: Failed adding component.", false, LogType.Error );
 			}			
 
 			return true;

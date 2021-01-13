@@ -33,8 +33,6 @@ namespace MiCore.Test
 	{
 		protected override bool OnTest()
 		{
-			Logger.Log( "Running Xml Test..." );
-
 			bool result = true;
 
 			if( !Vec2fTest() )
@@ -52,7 +50,7 @@ namespace MiCore.Test
 			if( !VideoModeTest() )
 				result = false;
 
-			return Logger.LogReturn( result ? "Xml test succeeded!." : "Xml test failed!.", result );
+			return result;
 		}
 
 		bool Vec2fTest()

@@ -73,7 +73,7 @@ namespace MiCore
 		/// </summary>
 		public int Count
 		{
-			get { return m_typemap.Count; }
+			get { return m_typemap?.Count ?? 0; }
 		}
 
 		/// <summary>
@@ -129,9 +129,10 @@ namespace MiCore
 		///   The component type.
 		/// </typeparam>
 		/// <returns>
-		///   True if the component type was registered successfully and false otherwise.
+		///   True if the component type was registered successfully and false otherwise. This will
+		///   only fail if `T.TypeName` is not a valid ID.
 		/// </returns>
-		public bool Register<T>() where T : MiComponent, new()
+		public bool Register<T>( bool replace = true ) where T : MiComponent, new()
 		{
 			string name;
 
@@ -139,47 +140,17 @@ namespace MiCore
 				name = t.TypeName;
 
 			if( !Identifiable.IsValid( name ) )
-				return Logger.LogReturn( "Unable to register component with invalid TypeName.", false, LogType.Error );
+				return false;
 
-			if( m_typemap.ContainsKey( name ) )
-				m_typemap[ name ] = typeof( T );
-			else
-				m_typemap.Add( name, typeof( T ) );
-
-			return true;
-		}
-		/// <summary>
-		///   Registers a component type.
-		/// </summary>
-		/// <param name="type">
-		///   The component type.
-		/// </param>
-		/// <returns>
-		///   True if type is a valid component type and was registered successfully, otherwise 
-		///   null.
-		/// </returns>
-		public bool Register( Type type )
-		{
-			if( type == null )
-				return Logger.LogReturn( "Unable to register null component type.", false, LogType.Error );
-			if( type.IsSubclassOf( typeof( MiComponent ) ) )
-				return Logger.LogReturn( "Unable to register non-component type as component.", false, LogType.Error );
-
-			try
+			if( Registered<T>() )
 			{
-				using( MiComponent c = (MiComponent)Activator.CreateInstance( type ) )
-				{
-					if( m_typemap.ContainsKey( c.TypeName ) )
-						m_typemap[ c.TypeName ] = type;
-					else
-						m_typemap.Add( c.TypeName, type );
-				}
-			}
-			catch( Exception e )
-			{
-				return Logger.LogReturn( "Unable to register component type: " + e.Message, false, LogType.Error );
+				if( !replace )
+					return true;
+
+				m_typemap.Remove( name );
 			}
 
+			m_typemap.Add( name, typeof( T ) );
 			return true;
 		}
 		
@@ -200,7 +171,7 @@ namespace MiCore
 				name = t.TypeName;
 
 			if( !m_typemap.ContainsKey( name ) )
-				return Logger.LogReturn<T>( "Unable to create component from unregistered TypeName.", null, LogType.Error );
+				return null;
 
 			T c;
 
@@ -229,36 +200,11 @@ namespace MiCore
 			if( !Registered( typename ) )
 				return null;
 
-			return Create( m_typemap[ typename ] );
-		}
-		/// <summary>
-		///   Creates a component from a given type if it is registered.
-		/// </summary>
-		/// <param name="type">
-		///   The component type.
-		/// </param>
-		/// <returns>
-		///  A new component if the type was registered, otherwise null.
-		/// </returns>
-		public MiComponent Create( Type type )
-		{
-			if( type == null )
-				return Logger.LogReturn<MiComponent>( "Unable to create component from null type.", null, LogType.Error );
-			
 			MiComponent c;
-
-			string name = null;
-
-			foreach( var v in m_typemap )
-				if( v.Value.Equals( type ) )
-					name = new string( v.Key.ToCharArray() );
-
-			if( name == null )
-				return Logger.LogReturn<MiComponent>( "Unable to create component from unregistered type.", null, LogType.Error );
 
 			try
 			{
-				c = (MiComponent)Activator.CreateInstance( m_typemap[ name ] );
+				c = (MiComponent)Activator.CreateInstance( m_typemap[ typename ] );
 			}
 			catch( Exception e )
 			{

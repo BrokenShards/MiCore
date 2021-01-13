@@ -162,9 +162,7 @@ namespace MiCore.Test
 
 		public class TextSerializableTest : TestModule
 		{
-			/// <summary>
-			///   Text serialization path.
-			/// </summary>
+			// Text serialization path.
 			const string TextSerialPath = "text.txt";
 
 			protected override bool OnTest()
@@ -204,9 +202,7 @@ namespace MiCore.Test
 		}
 		public class BinarySerializableTest : TestModule
 		{
-			/// <summary>
-			///   Binary serialization path.
-			/// </summary>
+			// Binary serialization path.
 			const string BinarySerialPath = "binary.bin";
 
 			protected override bool OnTest()

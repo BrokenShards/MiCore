@@ -162,7 +162,10 @@ namespace MiCore
 		{
 			get			
 			{
-				List<T> children = HasChildren ? new List<T>( Children ) : new List<T>();
+				if( !HasChildren )
+					return new T[ 0 ];
+
+				List<T> children = new List<T>( Children );
 
 				foreach( T child in this )
 				{

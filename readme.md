@@ -15,6 +15,23 @@ See `MiCoreTest/Tests/` for example usage.
 
 ## Changelog
 
+### Version 0.4.0
+- `MiEntity` objects now require a reference to the render window, `MiEntity.Window` to be assigned
+  in order to contain components that need it. When setting `MiEntity.Window`, it will be applied
+  to all child entities too.
+- `MiComponent` now contains methods for handling text entered events. `TextEntered(TextEventArgs)`
+  is to be called and passed the event args when the event happens and will then call the virtual
+  `OnTextEntered(TextEventArgs)` which you would override to handle the event. Because of this,
+  `MiEntity.TextEntered(TextEventArgs)` is provided to call the event on all components and
+  all components of all children.
+- `ComponentStack.Add<T>(bool)` has been renamed to `AddNew<T>(bool)` and has been replaced with
+  `Add<T>(T, bool)` to add an object of the given type to the stack.
+- Added methods `Insert(int, MiComponent, bool)`, `Insert<T>(int, T, bool)`,
+  `InsertNew<T>(int, bool)` and 'AddRange(IEnumerable<MiComponent>, bool)` to `ComponentStack` for
+  inserting components into perticular indicies in the stack. 
+  `AddRange(IEnumerable<MiComponent>, bool)` has also been added to easily add a range of components
+  from a collection.
+
 ### Version 0.3.0
 - `Entity`, `Component` classes have been renamed to `MiEntity` and `MiComponent`.
 - Added `MiNode<T>` abstract class to provide a parent-child relationship tree of type `T` for
