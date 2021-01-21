@@ -5,7 +5,7 @@ MiCore is an accumulation of my old libraries, SharpID, SharpEntity, SharpLogger
 SharpTest and is used as the core framework for my games and applications.
 
 ## Dependencies
-- SFML.Net `https://github.com/graphnode/SFML.Net.git`
+- SFML.Net `https://github.com/SFML/SFML.Net.git`
 
 ## Usage
 See `MiCoreTest/Tests/` for example usage.
@@ -14,6 +14,9 @@ See `MiCoreTest/Tests/` for example usage.
 - Look into why job tests occasionally fail.
 
 ## Changelog
+
+### Version 0.5.0
+- Changed SFML source to latest official SFML.Net repository.
 
 ### Version 0.4.0
 - `MiEntity` objects now require a reference to the render window, `MiEntity.Window` to be assigned
