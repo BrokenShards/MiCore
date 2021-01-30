@@ -28,7 +28,7 @@ namespace MiCore
 	/// <summary>
 	///   Base class for components.
 	/// </summary>
-	public abstract class MiComponent : MiObject
+	public abstract class MiComponent : MiObject, IEquatable<MiComponent>
 	{
 		/// <summary>
 		///   Constructor.
@@ -36,7 +36,7 @@ namespace MiCore
 		public MiComponent()
 		:	base()
 		{
-			Stack                  = null;
+			Parent                 = null;
 			RequiredComponents     = null;
 			IncompatibleComponents = null;
 		}
@@ -49,7 +49,7 @@ namespace MiCore
 		public MiComponent( MiComponent comp )
 		:	base( comp )
 		{
-			Stack                  = null;
+			Parent                 = null;
 			RequiredComponents     = null;
 			IncompatibleComponents = null;
 		}
@@ -78,20 +78,12 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   The component stack that owns the component.
-		/// </summary>
-		public ComponentStack Stack
-		{
-			get; set;
-		}
-		/// <summary>
-		///   The entity that owns the component stack.
+		///   The entity that owns the component.
 		/// </summary>
 		public MiEntity Parent
 		{
-			get { return Stack.Parent; }
+			get; set;
 		}
-
 
 		/// <summary>
 		///   Checks if the component requires a component with the given component name.
@@ -213,6 +205,23 @@ namespace MiCore
 		{
 			if( e != null && Enabled )
 				OnTextEntered( e );
+		}
+
+		/// <summary>
+		///   Checks if the object is considered equal to this object.
+		/// </summary>
+		/// <param name="other">
+		///   The object to compare to.
+		/// </param>
+		/// <returns>
+		///   True if the object is considered equal to this object, otherwise false.
+		/// </returns>
+		public bool Equals( MiComponent other )
+		{
+			if( other == null || TypeName != other.TypeName )
+				return false;
+
+			return true;
 		}
 
 		/// <summary>

@@ -21,6 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -41,8 +42,8 @@ namespace MiCore
 		public MiEntity()
 		:	base()
 		{
-			Components = new ComponentStack( this );
-			Window     = null;
+			Window       = null;
+			m_components = new List<MiComponent>();
 		}
 		/// <summary>
 		///   Copy constructor.
@@ -56,9 +57,18 @@ namespace MiCore
 		public MiEntity( MiEntity ent )
 		:	base( ent )
 		{
-			Components = new ComponentStack( ent.Components );
-			Components.Parent = this;
 			Window = ent.Window;
+
+			if( ent.ComponentCount == 0 )
+				m_components = new List<MiComponent>();
+			else
+			{
+				m_components = new List<MiComponent>( ent.ComponentCount );
+
+				foreach( MiComponent c in ent.m_components )
+					if( !AddComponent( (MiComponent)c.Clone(), true ) )
+						throw new InvalidOperationException( "Unable to add coppied component to ComponentStack." );
+			}
 		}
 		/// <summary>
 		///   Constructor setting the target render window.
@@ -69,8 +79,8 @@ namespace MiCore
 		public MiEntity( RenderWindow window )
 		:	base()
 		{
-			Components = new ComponentStack( this );
-			Window     = window;
+			Window       = window;
+			m_components = new List<MiComponent>();
 		}
 		/// <summary>
 		///   Constructor setting the object ID and optionally the target render window.
@@ -84,8 +94,8 @@ namespace MiCore
 		public MiEntity( string id, RenderWindow window = null )
 		:	base( id )
 		{
-			Components = new ComponentStack( this );
-			Window     = window;
+			Window       = window;
+			m_components = new List<MiComponent>();
 		}
 		/// <summary>
 		///   Constructor setting the object ID, name and optionally the target render window.
@@ -102,17 +112,10 @@ namespace MiCore
 		public MiEntity( string id, string name, RenderWindow window = null )
 		:	base( id, name )
 		{
-			Components = new ComponentStack( this );
-			Window     = window;
+			Window       = window;
+			m_components = new List<MiComponent>();
 		}
 
-		/// <summary>
-		///   Entity component stack.
-		/// </summary>
-		public ComponentStack Components
-		{
-			get; private set;
-		}
 		/// <summary>
 		///   A reference to the target render window.
 		/// </summary>
@@ -131,6 +134,612 @@ namespace MiCore
 		}
 
 		/// <summary>
+		///   The amount of components the stack contains.
+		/// </summary>
+		public int ComponentCount
+		{
+			get { return m_components.Count; }
+		}
+
+		/// <summary>
+		///   Creates an array containing the names of all components incompatible with the existing
+		///   components.
+		/// </summary>
+		public string[] GetIncompatibleComponents()
+		{
+			List<string> list = new List<string>();
+
+			bool ContainsString( string s )
+			{
+				if( !Identifiable.IsValid( s ) )
+					return false;
+
+				foreach( string l in list )
+					if( l.Equals( s ) )
+						return true;
+
+				return false;
+			}
+
+			foreach( MiComponent c in m_components )
+			{
+				if( c.IncompatibleComponents == null )
+					continue;
+
+				foreach( string i in c.IncompatibleComponents )
+					if( !ContainsString( i ) )
+						list.Add( i );
+			}
+
+			return list.ToArray();
+		}
+
+		/// <summary>
+		///   Checks if a given component type is compatible with the current components.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type.
+		/// </typeparam>
+		/// <returns>
+		///   True if the component type is registered, compatible and can be added, otherwise false.
+		/// </returns>
+		public bool IsCompatible<T>() where T : MiComponent, new()
+		{
+			using( T t = new T() )
+				return IsCompatible( t );
+		}
+		/// <summary>
+		///   Checks if a given component type name is compatible with the current components.
+		/// </summary>
+		/// <param name="typename">
+		///   The component type name.
+		/// </param>
+		/// <returns>
+		///   True if the component type is registered, compatible and can be added, otherwise false.
+		/// </returns>
+		public bool IsCompatible( string typename )
+		{
+			if( typename == null || !ComponentRegister.Manager.Registered( typename ) )
+				return false;
+
+			string[] incomp = GetIncompatibleComponents();
+
+			foreach( string s in incomp )
+				if( s.Equals( typename ) )
+					return false;
+
+			return true;
+		}
+		/// <summary>
+		///   Checks if a given component and its required components are compatible with the 
+		///   current components.
+		/// </summary>
+		/// <param name="comp">
+		///   The component.
+		/// </param>
+		/// <returns>
+		///   True if the component and its requirements are registered, compatible and can be 
+		///   added, otherwise false.
+		/// </returns>
+		public bool IsCompatible( MiComponent comp )
+		{
+			if( comp == null || !IsCompatible( comp.TypeName ) )
+				return false;
+
+			if( comp.RequiredComponents != null )
+				foreach( string s in comp.RequiredComponents )
+					if( !IsCompatible( s ) )
+						return false;
+
+			return true;
+		}
+
+		/// <summary>
+		///   Checks if the stack contains a component of the given type.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type.
+		/// </typeparam>
+		/// <returns>
+		///   True if the stack contains a component with the given type, otherwise false.
+		/// </returns>
+		public bool HasComponent<T>() where T : MiComponent, new()
+		{
+			string typename;
+
+			using( T t = new T() )
+				typename = new string( t.TypeName.ToCharArray() );
+
+			return HasComponent( typename );
+		}
+		/// <summary>
+		///   Checks if the stack contains a component with the given type name.
+		/// </summary>
+		/// <param name="type">
+		///   The component type name.
+		/// </param>
+		/// <returns>
+		///   True if the stack contains a component with the given type name, otherwise false.
+		/// </returns>
+		public bool HasComponent( string type )
+		{
+			if( string.IsNullOrWhiteSpace( type ) )
+				return false;
+
+			foreach( MiComponent c in m_components )
+			{
+				if( c == null )
+					continue;
+
+				if( c.TypeName.Equals( type ) )
+					return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		///   Gets the index of the component with the given type.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type.
+		/// </typeparam>
+		/// <returns>
+		///   A non-negative index if the stack contains a component with the given type,
+		///   otherwise -1.
+		/// </returns>
+		public int ComponentIndex<T>() where T : MiComponent, new()
+		{
+			string typename;
+
+			using( T t = new T() )
+				typename = t.TypeName;
+
+			return ComponentIndex( typename );
+		}
+		/// <summary>
+		///   Gets the index of the component with the given type name.
+		/// </summary>
+		/// <param name="type">
+		///   The component type name.
+		/// </param>
+		/// <returns>
+		///   A non-negative index if the stack contains a component with the given type name,
+		///   otherwise -1.
+		/// </returns>
+		public int ComponentIndex( string type )
+		{
+			if( !string.IsNullOrWhiteSpace( type ) )
+			{ 
+				for( int i = 0; i < ComponentCount; i++ )
+				{
+					if( m_components[ i ] == null )
+						continue;
+					if( m_components[ i ].TypeName.Equals( type ) )
+						return i;
+				}
+			}
+
+			return -1;
+		}
+		
+		/// <summary>
+		///   Gets the component at the given index.
+		/// </summary>
+		/// <param name="index">
+		///   The component index.
+		/// </param>
+		/// <returns>
+		///   The component at the given index or null if the index is out of range.
+		/// </returns>
+		public MiComponent GetComponent( int index )
+		{
+			if( index < 0 || index >= ComponentCount )
+				return null;
+
+			return m_components[ index ];
+		}
+		/// <summary>
+		///   Gets the component with the given type name.
+		/// </summary>
+		/// <param name="typename">
+		///   The component type name.
+		/// </param>
+		/// <returns>
+		///   The component with the given type name if it exists, otherwise null.
+		/// </returns>
+		public MiComponent GetComponent( string typename )
+		{
+			return GetComponent( ComponentIndex( typename ) );
+		}
+		/// <summary>
+		///   Gets the component with the given type.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type.
+		/// </typeparam>
+		/// <returns>
+		///   The component with the given type or null if it does not exist.
+		/// </returns>
+		public T GetComponent<T>() where T : MiComponent, new()
+		{
+			return GetComponent( ComponentIndex<T>() ) as T;
+		}
+
+		/// <summary>
+		///   Adds a new component to the stack.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type to add.
+		/// </typeparam>
+		/// <param name="replace">
+		///   Should an already existing component of the same type be replaced?
+		/// </param>
+		/// <returns>
+		///   True if the component was added successfully, otherwise false.
+		/// </returns>
+		public bool AddNewComponent<T>( bool replace = false ) where T : MiComponent, new()
+		{
+			if( !ComponentRegister.Manager.Registered<T>() )
+				return Logger.LogReturn( "Unable to add component: Component is not registered.", false, LogType.Error );
+
+			return AddComponent( ComponentRegister.Manager.Create<T>(), replace );
+		}
+		/// <summary>
+		///   Adds a new existing component to the stack.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type to add.
+		/// </typeparam>
+		/// <param name="comp">
+		///   The component to add.
+		/// </param>
+		/// <param name="replace">
+		///   Should an already existing component of the same type be replaced?
+		/// </param>
+		/// <returns>
+		///   True if the component was added successfully, otherwise false.
+		/// </returns>
+		public bool AddComponent<T>( T comp, bool replace = false ) where T : MiComponent, new()
+		{
+			if( !ComponentRegister.Manager.Registered<T>() )
+				return Logger.LogReturn( "Unable to add component: Component is not registered.", false, LogType.Error );
+
+			return AddComponent( (MiComponent)comp, replace );
+		}
+		/// <summary>
+		///   Adds a component to the stack.
+		/// </summary>
+		/// <param name="comp">
+		///   The component to add.
+		/// </param>
+		/// <param name="replace">
+		///   If an already existing component should be replaced.
+		/// </param>
+		/// <returns>
+		///   True if the component was added successfully, otherwise false.
+		/// </returns>
+		public bool AddComponent( MiComponent comp, bool replace = false )
+		{
+			if( !IsCompatible( comp ) )
+				return false;
+			if( m_components.Contains( comp ) )
+				return true;
+
+			if( HasComponent( comp.TypeName ) )
+			{
+				if( !replace )
+					return false;
+
+				RemoveComponent( comp.TypeName );
+			}
+
+			if( comp.RequiredComponents != null )
+				foreach( string r in comp.RequiredComponents )
+					if( !HasComponent( r ) )
+						if( !AddComponent( ComponentRegister.Manager.Create( r ) ) )
+							return false;
+
+			comp.Parent = this;
+			m_components.Add( comp );
+			return true;
+		}
+
+		/// <summary>
+		///   Adds a range of components to the stack.
+		/// </summary>
+		/// <param name="comps">
+		///   The component range to add.
+		/// </param>
+		/// <param name="replace">
+		///   If an already existing component should be replaced.
+		/// </param>
+		/// <returns>
+		///   True if comps is not null and all componenta were added successfully, otherwise false.
+		/// </returns>
+		public bool AddComponentRange( IEnumerable<MiComponent> comps, bool replace = false )
+		{
+			if( comps == null )
+				return false;
+
+			foreach( MiComponent c in comps )
+				if( !AddComponent( c, replace ) )
+					return false;
+
+			return true;
+		}
+
+		/// <summary>
+		///   Inserts a component at the given index in the stack.
+		/// </summary>
+		/// <param name="index">
+		///   The index to insert the component. <see cref="AddComponent(MiComponent, bool)"/> will be called
+		///   instead if equals to <see cref="ComponentCount"/>.
+		/// </param>
+		/// <param name="comp">
+		///   The component to add.
+		/// </param>
+		/// <param name="replace">
+		///   Should an alreadu existing component of the same type be replaced?
+		/// </param>
+		/// <returns>
+		///   True if the component was inserted successfully, otherwise false.
+		/// </returns>
+		public bool InsertComponent( int index, MiComponent comp, bool replace = false )
+		{
+			if( comp == null || index < 0 || index > ComponentCount || !IsCompatible( comp ) )
+				return false;
+			if( index == ComponentCount )
+				return AddComponent( comp, replace );
+			if( m_components.Contains( comp ) )
+				return InsertComponent( index, ReleaseComponent( comp.TypeName ), replace );
+
+			if( HasComponent( comp.TypeName ) )
+			{
+				if( !replace )
+					return false;
+
+				int i = ComponentIndex( comp.TypeName );
+
+				if( i < index )
+					index--;
+
+				RemoveComponent( comp.TypeName );
+			}
+
+			if( comp.RequiredComponents != null )
+				foreach( string r in comp.RequiredComponents )
+					if( !HasComponent( r ) )
+						if( !AddComponent( ComponentRegister.Manager.Create( r ) ) )
+							return Logger.LogReturn( "Unable to add component to Entity.", false, LogType.Error );
+
+			comp.Parent = this;
+			m_components.Insert( index, comp );
+			return true;
+		}
+		/// <summary>
+		///   Inserts a component at the given index in the stack.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type to add.
+		/// </typeparam>
+		/// <param name="index">
+		///   The index to insert the component.
+		/// </param>
+		/// <param name="comp">
+		///   The component to add.
+		/// </param>
+		/// <param name="replace">
+		///   Should an already existing component of the same type be replaced?
+		/// </param>
+		/// <returns>
+		///   True if the component was added successfully, otherwise false.
+		/// </returns>
+		public bool InsertComponent<T>( int index, T comp, bool replace = false ) where T : MiComponent, new()
+		{
+			if( !ComponentRegister.Manager.Registered<T>() )
+				return Logger.LogReturn( "Unable to add component: Component is not registered.", false, LogType.Error );
+
+			return InsertComponent( index, (MiComponent)comp, replace );
+		}
+		/// <summary>
+		///   Inserts a component at the given index in the stack.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type to add.
+		/// </typeparam>
+		/// <param name="index">
+		///   The index to insert the component.
+		/// </param>
+		/// <param name="replace">
+		///   Should an already existing component of the same type be replaced?
+		/// </param>
+		/// <returns>
+		///   True if the component was added successfully, otherwise false.
+		/// </returns>
+		public bool InsertNewComponent<T>( int index, bool replace = false ) where T : MiComponent, new()
+		{
+			if( !ComponentRegister.Manager.Registered<T>() )
+				return Logger.LogReturn( "Unable to add component: Component is not registered.", false, LogType.Error );
+
+			return InsertComponent( index, ComponentRegister.Manager.Create<T>(), replace );
+		}
+
+		/// <summary>
+		///   Inserts a range of components to the stack at the given index.
+		/// </summary>
+		/// <param name="index">
+		///   The index to insert the components.
+		/// </param>
+		/// <param name="comps">
+		///   The component range to add.
+		/// </param>
+		/// <param name="replace">
+		///   If an already existing component should be replaced.
+		/// </param>
+		/// <returns>
+		///   True if comps is not null and all componenta were added successfully, otherwise false.
+		/// </returns>
+		public bool InsertComponentRange( int index, IEnumerable<MiComponent> comps, bool replace = false )
+		{
+			if( comps == null || index < 0 || index > ComponentCount )
+				return false;
+			if( index == ComponentCount )
+				return AddComponentRange( comps, replace );
+
+			int i = index;
+
+			foreach( MiComponent c in comps )
+			{
+				if( !InsertComponent( i, c, replace ) )
+					return false;
+
+				i++;
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		///   Removes the component with the given type.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type.
+		/// </typeparam>
+		/// <returns>
+		///   True if there was a component with the given type and it was removed,
+		///   otherwise false.
+		/// </returns>
+		public bool RemoveComponent<T>() where T : MiComponent, new()
+		{
+			return RemoveComponent( ComponentIndex<T>() );
+		}
+		/// <summary>
+		///   Removes the component at the given index.
+		/// </summary>
+		/// <param name="index">
+		///   The component index.
+		/// </param>
+		/// <returns>
+		///   True if index was in range and the component was removed, otherwise false.
+		/// </returns>
+		public bool RemoveComponent( int index )
+		{
+			if( index < 0 || index >= ComponentCount )
+				return false;
+
+			List<string> rem = new List<string>();
+
+			for( int i = 0; i < ComponentCount; i++ )
+				if( i != index && m_components[ i ].Requires( m_components[ index ].TypeName ) )
+					rem.Add( m_components[ i ].TypeName );
+
+			m_components[ index ].Dispose();
+			m_components[ index ] = null;
+			m_components.RemoveAt( index );
+
+			foreach( string s in rem )
+				RemoveComponent( s );
+
+			return true;
+		}
+		/// <summary>
+		///   Removes the component with the given type name.
+		/// </summary>
+		/// <param name="typename">
+		///   The component type name.
+		/// </param>
+		/// <returns>
+		///   True if the component existed and was removed successfully.
+		/// </returns>
+		public bool RemoveComponent( string typename )
+		{
+			return RemoveComponent( ComponentIndex( typename ) );
+		}
+
+		/// <summary>
+		///   Releases the component with the given type without disposing it.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type.
+		/// </typeparam>
+		/// <returns>
+		///   The released component or null if nothing was removed.
+		/// </returns>
+		public T ReleaseComponent<T>() where T : MiComponent, new()
+		{
+			return ReleaseComponent( ComponentIndex<T>() ) as T;
+		}
+		/// <summary>
+		///   Releases the component at the given index.
+		/// </summary>
+		/// <param name="index">
+		///   The component index.
+		/// </param>
+		/// <returns>
+		///   The released component or null if index is out of range.
+		/// </returns>
+		public MiComponent ReleaseComponent( int index )
+		{
+			if( index < 0 || index >= ComponentCount )
+				return null;
+
+			List<string> rem = new List<string>();
+
+			for( int i = 0; i < ComponentCount; i++ )
+				if( i != index && m_components[ i ].Requires( m_components[ index ].TypeName ) )
+					rem.Add( m_components[ i ].TypeName );
+
+			MiComponent result = m_components[ index ];
+			m_components.RemoveAt( index );
+
+			foreach( string s in rem )
+				RemoveComponent( s );
+
+			result.Parent = null;
+			return result;
+		}
+		/// <summary>
+		///   Releases the component with the given type name.
+		/// </summary>
+		/// <param name="typename">
+		///   The component type name.
+		/// </param>
+		/// <returns>
+		///   The released component or null if it does not exist.
+		/// </returns>
+		public MiComponent ReleaseComponent( string typename )
+		{
+			return ReleaseComponent( ComponentIndex( typename ) );
+		}
+		/// <summary>
+		///   Releases all components into an array and returns it.
+		/// </summary>
+		/// <returns>
+		///   An array containing all released components.
+		/// </returns>
+		public MiComponent[] ReleaseAllComponents()
+		{
+			List<MiComponent> list = new List<MiComponent>();
+
+			while( ComponentCount > 0 )
+				list.Add( ReleaseComponent( 1 ) );
+
+			return list.ToArray();
+		}
+
+		/// <summary>
+		///   Disposes of and clears all components from the stack.
+		/// </summary>
+		public void ClearComponents()
+		{
+			foreach( MiComponent c in m_components )
+				c?.Dispose();
+
+			m_components.Clear();
+		}
+
+		/// <summary>
 		///   To be called on TextEntered event. Calls <see cref="MiComponent.OnTextEntered(TextEventArgs)"/>
 		///   for all enabled components for this entity and all child entities.
 		/// </summary>
@@ -141,12 +750,12 @@ namespace MiCore
 		{
 			if( e != null && Enabled )
 			{
-				foreach( MiComponent c in Components )
+				foreach( MiComponent c in m_components )
 					c.TextEntered( e );
 
 				if( HasChildren )
 					foreach( MiEntity en in AllChildren )
-						foreach( MiComponent c in en.Components )
+						foreach( MiComponent c in en.m_components )
 							c.TextEntered( e );
 			}
 		}
@@ -159,9 +768,11 @@ namespace MiCore
 		/// </param>
 		protected override void OnUpdate( float dt )
 		{
-			Components.Parent = this;
-			Components.Update( dt );
-
+			for( int i = 0; i < ComponentCount; i++ )
+			{
+				m_components[ i ].Parent = this;
+				m_components[ i ]?.Update( dt );
+			}
 			foreach( MiEntity e in this )
 			{
 				e.Window = Window;
@@ -179,8 +790,11 @@ namespace MiCore
 		/// </param>
 		protected override void OnDraw( RenderTarget target, RenderStates states )
 		{
-			Components.Parent = this;
-			Components.Draw( target, states );
+			for( int i = 0; i < ComponentCount; i++ )
+			{
+				m_components[ i ].Parent = this;
+				m_components[ i ]?.Draw( target, states );
+			}
 
 			foreach( MiEntity e in this )
 				e.Draw( target, states );
@@ -191,7 +805,7 @@ namespace MiCore
 		/// </summary>
 		protected override void OnDispose()
 		{
-			Components.Dispose();
+			ClearComponents();
 			base.OnDispose();
 			Window = null;
 		}
@@ -209,8 +823,39 @@ namespace MiCore
 		{
 			if( !base.LoadFromStream( sr ) )
 				return false;
-			if( !Components.LoadFromStream( sr ) )
-				return Logger.LogReturn( "Failed loading entity: Unable to load components from stream.", false, LogType.Error );
+
+			try
+			{
+				int count = sr.ReadInt32();
+				m_components = new List<MiComponent>( count );
+
+				for( int i = 0; i < count; i++ )
+				{
+					string type = sr.ReadString();
+
+					if( !ComponentRegister.Manager.Registered( type ) )
+						return Logger.LogReturn( "Failed loading MiEntity: Saved object contains unregistered component name.", false, LogType.Error );
+
+					if( HasComponent( type ) )
+					{
+						if( !GetComponent( type ).LoadFromStream( sr ) )
+							return Logger.LogReturn( "Failed loading MiEntity: Unable to load component from stream.", false, LogType.Error );
+					}
+					else
+					{
+						MiComponent c = ComponentRegister.Manager.Create( type );
+
+						if( !c.LoadFromStream( sr ) )
+							return Logger.LogReturn( "Failed loading MiEntity: Unable to load component from stream.", false, LogType.Error );
+						if( AddComponent( c ) )
+							return Logger.LogReturn( "Failed loading MiEntity: Unable to add component loaded from stream.", false, LogType.Error );
+					}
+				}
+			}
+			catch( Exception e )
+			{
+				return Logger.LogReturn( "Failed loading MiEntity from stream: " + e.Message, false, LogType.Error );
+			}
 
 			return true;
 		}
@@ -227,8 +872,23 @@ namespace MiCore
 		{
 			if( !base.SaveToStream( sw ) )
 				return false;
-			if( !Components.SaveToStream( sw ) )
-				return Logger.LogReturn( "Failed saving entity: Unable to save components.", false, LogType.Error );
+
+			try
+			{
+				sw.Write( ComponentCount );
+
+				for( int i = 0; i < ComponentCount; i++ )
+				{
+					sw.Write( m_components[ i ].TypeName );
+
+					if( !m_components[ i ].SaveToStream( sw ) )
+						return Logger.LogReturn( "Failed saving MiEntity: Unable to save component to stream.", false, LogType.Error );
+				}
+			}
+			catch( Exception e )
+			{
+				return Logger.LogReturn( "Unable to save MiEntity to stream: " + e.Message, false, LogType.Error );
+			}
 
 			return true;
 		}
@@ -246,28 +906,31 @@ namespace MiCore
 			if( !base.LoadFromXml( element ) )
 				return false;
 
-			XmlElement comp = element[ nameof( ComponentStack ) ];
+			ClearComponents();
 
-			if( comp == null )
-				return Logger.LogReturn( "Failed loading entity: No MiComponentStack element.", false, LogType.Error );
-			if( !Components.LoadFromXml( comp ) )
-				return Logger.LogReturn( "Failed loading entity: Unable to load MiComponentStack from xml.", false, LogType.Error );
+			XmlNodeList comps = element.ChildNodes;
+
+			foreach( XmlNode node in comps )
+			{
+				if( node.NodeType != XmlNodeType.Element )
+					continue;
+
+				XmlElement e = (XmlElement)node;
+
+				if( !ComponentRegister.Manager.Registered( e.Name ) )
+					continue;
+
+				MiComponent c = ComponentRegister.Manager.Create( e.Name );
+
+				if( c == null )
+					return Logger.LogReturn( "Unable to load MiEntity: Failed creating component.", false, LogType.Error );
+				if( !c.LoadFromXml( e ) )
+					return Logger.LogReturn( "Unable to load MiEntity: Failed parsing component.", false, LogType.Error );
+				if( !AddComponent( c ) )
+					return Logger.LogReturn( "Unable to load MiEntity: Failed adding component.", false, LogType.Error );
+			}
 
 			return true;
-		}
-
-		/// <summary>
-		///   Checks if this object is equal to another.
-		/// </summary>
-		/// <param name="other">
-		///   The object to check against.
-		/// </param>
-		/// <returns>
-		///   True if the given object is concidered equal to this object, otherwise false.
-		/// </returns>
-		public new bool Equals( MiEntity other )
-		{
-			return base.Equals( other ) && Components.Equals( other.Components );
 		}
 		/// <summary>
 		///   Gets the object xml string.
@@ -306,7 +969,8 @@ namespace MiCore
 			sb.Append( Name );
 			sb.AppendLine( "\">" );
 
-			sb.AppendLine( XmlLoadable.ToString( Components, 1 ) );
+			for( int i = 0; i < ComponentCount; i++ )
+				sb.AppendLine( XmlLoadable.ToString( m_components[ i ], 1 ) );
 
 			if( HasChildren )
 			{
@@ -328,6 +992,27 @@ namespace MiCore
 
 			return sb.ToString();
 		}
+
+		/// <summary>
+		///   Checks if this object is equal to another.
+		/// </summary>
+		/// <param name="other">
+		///   The object to check against.
+		/// </param>
+		/// <returns>
+		///   True if the given object is concidered equal to this object, otherwise false.
+		/// </returns>
+		public new bool Equals( MiEntity other )
+		{
+			if( !base.Equals( other ) || ComponentCount != other.ComponentCount )
+				return false;
+
+			for( int i = 0; i < ComponentCount; i++ )
+				if( !m_components[ i ].Equals( other.m_components[ i ] ) )
+					return false;
+
+			return true;
+		}
 		/// <summary>
 		///   Returns a copy of this object.
 		/// </summary>
@@ -340,5 +1025,6 @@ namespace MiCore
 		}
 
 		RenderWindow m_window;
+		List<MiComponent> m_components;
 	}
 }

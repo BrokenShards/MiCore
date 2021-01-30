@@ -61,7 +61,6 @@
     <Compile Include="Source\JobList.cs" />
     <Compile Include="Source\MiComponent.cs" />
     <Compile Include="Source\ComponentRegister.cs" />
-    <Compile Include="Source\ComponentStack.cs" />
     <Compile Include="Source\Database.cs" />
     <Compile Include="Source\DatabaseManager.cs" />
     <Compile Include="Source\MiEntity.cs" />

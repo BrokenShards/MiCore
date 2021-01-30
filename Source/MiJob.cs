@@ -181,7 +181,7 @@ namespace MiCore
 
 			if( RequiredComponents != null )
 				foreach( string r in RequiredComponents )
-					if( !e.Components.Contains( r ) )
+					if( !e.HasComponent( r ) )
 						return false;
 
 			return true;

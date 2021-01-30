@@ -15,6 +15,13 @@ See `MiCoreTest/Tests/` for example usage.
 
 ## Changelog
 
+### Version 0.6.0
+- `ComponentStack` has been merged back into `MiEntity` and the methods and properties have been
+  renamed to show they interact with components.
+- Added `MiEntity.ReleaseAllComponents()` that removes all components from an entity without
+  disposing of them and returns an array containing them.
+- Now `MiComponent` implements `IEquatable<MiComponent>` as a base for deriving classes.
+
 ### Version 0.5.0
 - Changed SFML source to latest official SFML.Net repository.
 

@@ -237,24 +237,24 @@ namespace MiCore.Test
 			{
 				get
 				{
-					if( Stack == null || !Stack.Contains<SizeComponent>() )
+					if( Parent == null || !Parent.HasComponent<SizeComponent>() )
 						return 0.0f;
 
 					// Here we use `Stack` to access the parent stack and call `Get<T>` to get
 					// the `SizeComponent` in the same component stack. Because `RequiredComponents`
 					// includes `nameof( SizeComponent )`, it is safe to assume the stack will
 					// contain a component of that type and we do not need to check for it.
-					return Stack.Get<SizeComponent>().Width * Scale;
+					return Parent.GetComponent<SizeComponent>().Width * Scale;
 				}
 			}
 			public float Height
 			{
 				get
 				{
-					if( Stack == null || !Stack.Contains<SizeComponent>() )
+					if( Parent == null || !Parent.HasComponent<SizeComponent>() )
 						return 0.0f;
 
-					return Stack.Get<SizeComponent>().Height * Scale;
+					return Parent.GetComponent<SizeComponent>().Height * Scale;
 				}
 			}
 
@@ -413,45 +413,45 @@ namespace MiCore.Test
 				return Logger.LogReturn( "Success!", true );
 			}
 		}
-		class ComponentStackTest : TestModule
+		class MiEntityTest : TestModule
 		{
 			protected override bool OnTest()
 			{
-				Logger.Log( "Running ComponentStack tests..." );
+				Logger.Log( "Running MiEntity tests..." );
 
 				if( !ComponentRegister.Manager.Register<SizeComponent>() ||
 					!ComponentRegister.Manager.Register<ScaleComponent>() )
 					return Logger.LogReturn( "Failed: Unable to register components.", false, LogType.Error );
 
-				using( ComponentStack stack = new ComponentStack() )
+				using( MiEntity ent = new MiEntity() )
 				{
-					if( !stack.Enabled )
-						return Logger.LogReturn( "Failed: New ComponentStack is in disabled state.", false, LogType.Error );
-					if( !stack.Visible )
-						return Logger.LogReturn( "Failed: New ComponentStack is in invisible state.", false, LogType.Error );
+					if( !ent.Enabled )
+						return Logger.LogReturn( "Failed: New MiEntity is in disabled state.", false, LogType.Error );
+					if( !ent.Visible )
+						return Logger.LogReturn( "Failed: New MiEntity is in invisible state.", false, LogType.Error );
 
-					// Trying to add a new component to the stack of a given type. This will add any
-					// components named in `RequiredComponents` too. This will fail if the stack
-					// already contains a component named in `IncompatibleComponents`.
-					if( !stack.AddNew<ScaleComponent>() )
+					// Trying to add a new component of a given type. This will add any components
+					// named in `RequiredComponents` too. This will fail if the entity already
+					// contains a component named in `IncompatibleComponents`.
+					if( !ent.AddNewComponent<ScaleComponent>() )
 						return Logger.LogReturn( "Failed: Unable to add ScaleComponent.", false, LogType.Error );
 
-					// Checking if the stack contains a component of a given type.
-					if( !stack.Contains<ScaleComponent>() )
-						return Logger.LogReturn( "Failed: Succeeded adding ScaleComponent yet it is not contained by the stack.", false, LogType.Error );
-					// Checking if the stack contains a component of a given type name.
-					if( !stack.Contains( nameof( SizeComponent ) ) )
+					// Checking if the entity contains a component of a given type.
+					if( !ent.HasComponent<ScaleComponent>() )
+						return Logger.LogReturn( "Failed: Succeeded adding ScaleComponent yet it is not contained by the entity.", false, LogType.Error );
+					// Checking if the entity contains a component of a given type name.
+					if( !ent.HasComponent( nameof( SizeComponent ) ) )
 						return Logger.LogReturn( "Failed: Required SizeComponent was not added with ScaleComponent.", false, LogType.Error );
 
-					// Accessing components of different types from the stack.
-					SizeComponent  size  = stack.Get<SizeComponent>();
-					ScaleComponent scale = stack.Get<ScaleComponent>();
+					// Accessing components of different types from the entity.
+					SizeComponent  size  = ent.GetComponent<SizeComponent>();
+					ScaleComponent scale = ent.GetComponent<ScaleComponent>();
 
-					// Ensuring the component parent stack is set properly.
-					if( scale.Stack != stack )
-						return Logger.LogReturn( "Failed: ComponentStack is not parent of directly added component.", false, LogType.Error );
-					if( size.Stack != stack )
-						return Logger.LogReturn( "Failed: ComponentStack is not parent of indirectly added component.", false, LogType.Error );
+					// Ensuring the component parent is set properly.
+					if( scale.Parent != ent )
+						return Logger.LogReturn( "Failed: MiEntity is not parent of directly added component.", false, LogType.Error );
+					if( size.Parent != ent )
+						return Logger.LogReturn( "Failed: MiEntity is not parent of indirectly added component.", false, LogType.Error );
 
 					// Manipulating component data.
 					size.Width  = 150.0f;
@@ -741,7 +741,7 @@ namespace MiCore.Test
 				result = false;
 			if( !Testing.Test<ComponentTest>() )
 				result = false;
-			if( !Testing.Test<ComponentStackTest>() )
+			if( !Testing.Test<MiEntityTest>() )
 				result = false;
 			if( !Testing.Test<MiNodeTest>() )
 				result = false;
