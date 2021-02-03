@@ -205,25 +205,15 @@ namespace MiCore.Test
 			:	base()
 			{
 				Scale = 1.0f;
-
-				// Here we add the names of any components that are required by this component to
-				// `RequiredComponents`. When adding this component to an entity, these required
-				// components will also be added if needed.
-				RequiredComponents = new string[] { nameof( SizeComponent ) };
-
-				// The opposite of `RequiredComponents` is `IncompatibleComponents`, any components
-				// named in it cannot be added to an entity containing this component.
 			}
 			public ScaleComponent( float scl )
 			:	base()
 			{
-				RequiredComponents = new string[] { nameof( SizeComponent ) };
 				Scale = scl;
 			}
 			public ScaleComponent( ScaleComponent c )
 			:	base( c )
 			{
-				RequiredComponents = new string[] { nameof( SizeComponent ) };
 				Scale = c?.Scale ?? 1.0f;
 			}
 
@@ -261,6 +251,21 @@ namespace MiCore.Test
 			public override string TypeName
 			{
 				get { return nameof( ScaleComponent ); }
+			}
+
+			protected override string[] GetRequiredComponents()
+			{
+				// Here we return the names of any components that are required by this component.
+				// When adding this component to an entity, these required components will also be
+				// added if needed.
+				return new string[] { nameof( SizeComponent ) };
+			}
+			protected override string[] GetIncompatibleComponents()
+			{
+				// Here we return the names of any components that are incompatible with this
+				// component. When trying to add a component in this list to the parent entity, it
+				// will be denied and return an error.
+				return base.GetIncompatibleComponents();
 			}
 
 			public override bool LoadFromStream( BinaryReader sr )

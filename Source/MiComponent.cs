@@ -37,8 +37,8 @@ namespace MiCore
 		:	base()
 		{
 			Parent                 = null;
-			RequiredComponents     = null;
-			IncompatibleComponents = null;
+			RequiredComponents     = GetRequiredComponents();
+			IncompatibleComponents = GetIncompatibleComponents();
 		}
 		/// <summary>
 		///   Copy constructor.
@@ -50,24 +50,18 @@ namespace MiCore
 		:	base( comp )
 		{
 			Parent                 = null;
-			RequiredComponents     = null;
-			IncompatibleComponents = null;
+			RequiredComponents     = GetRequiredComponents();
+			IncompatibleComponents = GetIncompatibleComponents();
 		}
 
 		/// <summary>
-		///   Contains the types of components required by this component type.
+		///   Contains the type names of components required by this component type.
 		/// </summary>
-		public string[] RequiredComponents
-		{
-			get; protected set;
-		}
+		public readonly string[] RequiredComponents;
 		/// <summary>
-		///   Contains the types of components incompatible with this component type.
+		///   Contains the type names of components incompatible with this component type.
 		/// </summary>
-		public string[] IncompatibleComponents
-		{
-			get; protected set;
-		}
+		public readonly string[] IncompatibleComponents;
 
 		/// <summary>
 		///   The component type name.
@@ -222,6 +216,29 @@ namespace MiCore
 				return false;
 
 			return true;
+		}
+
+		/// <summary>
+		///   Gets the type names of components required by this component type. Used to assign
+		///   <see cref="RequiredComponents"/>.
+		/// </summary>
+		/// <returns>
+		///   The type names of components required by this component type.
+		/// </returns>
+		protected virtual string[] GetRequiredComponents()
+		{
+			return new string[ 0 ];
+		}
+		/// <summary>
+		///   Gets the type names of components incompatible with this component type. Used to
+		///   assign <see cref="IncompatibleComponents"/>.
+		/// </summary>
+		/// <returns>
+		///   The type names of components incompatible with this component type.
+		/// </returns>
+		protected virtual string[] GetIncompatibleComponents()
+		{
+			return new string[ 0 ];
 		}
 
 		/// <summary>

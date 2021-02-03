@@ -15,6 +15,12 @@ See `MiCoreTest/Tests/` for example usage.
 
 ## Changelog
 
+### Version 0.7.0
+- Now `MiComponent.RequiredComponents` and `MiComponent.IncompatibleComponents` are readonly and are
+  assigned on construction with the `MiComponent.GetRequiredComponents()` and 
+  `MiComponent.GetIncompatibleComponents()` methods respectively.
+- Merged some path methods from `MiGfx`.
+
 ### Version 0.6.0
 - `ComponentStack` has been merged back into `MiEntity` and the methods and properties have been
   renamed to show they interact with components.
