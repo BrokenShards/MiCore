@@ -15,6 +15,12 @@ See `MiCoreTest/Tests/` for example usage.
 
 ## Changelog
 
+### Version 0.8.0
+- When adding a component to an entity, its required components are now added after the component
+  rather than before to prevent component order issues. Due to this, all `Entity.Insert*` methods
+  have been removed.
+- Removed `Paths.Executable` and `Paths.ExecutableFolder` due to unforseen reflection issues.
+
 ### Version 0.7.0
 - Now `MiComponent.RequiredComponents` and `MiComponent.IncompatibleComponents` are readonly and are
   assigned on construction with the `MiComponent.GetRequiredComponents()` and 

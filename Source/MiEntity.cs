@@ -162,14 +162,9 @@ namespace MiCore
 			}
 
 			foreach( MiComponent c in m_components )
-			{
-				if( c.IncompatibleComponents == null )
-					continue;
-
 				foreach( string i in c.IncompatibleComponents )
 					if( !ContainsString( i ) )
 						list.Add( i );
-			}
 
 			return list.ToArray();
 		}
@@ -226,10 +221,9 @@ namespace MiCore
 			if( comp == null || !IsCompatible( comp.TypeName ) )
 				return false;
 
-			if( comp.RequiredComponents != null )
-				foreach( string s in comp.RequiredComponents )
-					if( !IsCompatible( s ) )
-						return false;
+			foreach( string s in comp.RequiredComponents )
+				if( !IsCompatible( s ) )
+					return false;
 
 			return true;
 		}
@@ -434,14 +428,14 @@ namespace MiCore
 				RemoveComponent( comp.TypeName );
 			}
 
-			if( comp.RequiredComponents != null )
-				foreach( string r in comp.RequiredComponents )
-					if( !HasComponent( r ) )
-						if( !AddComponent( ComponentRegister.Manager.Create( r ) ) )
-							return false;
-
 			comp.Parent = this;
 			m_components.Add( comp );
+
+			foreach( string r in comp.RequiredComponents )
+				if( !HasComponent( r ) )
+					if( !AddComponent( ComponentRegister.Manager.Create( r ) ) )
+						return false;
+
 			return true;
 		}
 
@@ -465,137 +459,6 @@ namespace MiCore
 			foreach( MiComponent c in comps )
 				if( !AddComponent( c, replace ) )
 					return false;
-
-			return true;
-		}
-
-		/// <summary>
-		///   Inserts a component at the given index in the stack.
-		/// </summary>
-		/// <param name="index">
-		///   The index to insert the component. <see cref="AddComponent(MiComponent, bool)"/> will be called
-		///   instead if equals to <see cref="ComponentCount"/>.
-		/// </param>
-		/// <param name="comp">
-		///   The component to add.
-		/// </param>
-		/// <param name="replace">
-		///   Should an alreadu existing component of the same type be replaced?
-		/// </param>
-		/// <returns>
-		///   True if the component was inserted successfully, otherwise false.
-		/// </returns>
-		public bool InsertComponent( int index, MiComponent comp, bool replace = false )
-		{
-			if( comp == null || index < 0 || index > ComponentCount || !IsCompatible( comp ) )
-				return false;
-			if( index == ComponentCount )
-				return AddComponent( comp, replace );
-			if( m_components.Contains( comp ) )
-				return InsertComponent( index, ReleaseComponent( comp.TypeName ), replace );
-
-			if( HasComponent( comp.TypeName ) )
-			{
-				if( !replace )
-					return false;
-
-				int i = ComponentIndex( comp.TypeName );
-
-				if( i < index )
-					index--;
-
-				RemoveComponent( comp.TypeName );
-			}
-
-			if( comp.RequiredComponents != null )
-				foreach( string r in comp.RequiredComponents )
-					if( !HasComponent( r ) )
-						if( !AddComponent( ComponentRegister.Manager.Create( r ) ) )
-							return Logger.LogReturn( "Unable to add component to Entity.", false, LogType.Error );
-
-			comp.Parent = this;
-			m_components.Insert( index, comp );
-			return true;
-		}
-		/// <summary>
-		///   Inserts a component at the given index in the stack.
-		/// </summary>
-		/// <typeparam name="T">
-		///   The component type to add.
-		/// </typeparam>
-		/// <param name="index">
-		///   The index to insert the component.
-		/// </param>
-		/// <param name="comp">
-		///   The component to add.
-		/// </param>
-		/// <param name="replace">
-		///   Should an already existing component of the same type be replaced?
-		/// </param>
-		/// <returns>
-		///   True if the component was added successfully, otherwise false.
-		/// </returns>
-		public bool InsertComponent<T>( int index, T comp, bool replace = false ) where T : MiComponent, new()
-		{
-			if( !ComponentRegister.Manager.Registered<T>() )
-				return Logger.LogReturn( "Unable to add component: Component is not registered.", false, LogType.Error );
-
-			return InsertComponent( index, (MiComponent)comp, replace );
-		}
-		/// <summary>
-		///   Inserts a component at the given index in the stack.
-		/// </summary>
-		/// <typeparam name="T">
-		///   The component type to add.
-		/// </typeparam>
-		/// <param name="index">
-		///   The index to insert the component.
-		/// </param>
-		/// <param name="replace">
-		///   Should an already existing component of the same type be replaced?
-		/// </param>
-		/// <returns>
-		///   True if the component was added successfully, otherwise false.
-		/// </returns>
-		public bool InsertNewComponent<T>( int index, bool replace = false ) where T : MiComponent, new()
-		{
-			if( !ComponentRegister.Manager.Registered<T>() )
-				return Logger.LogReturn( "Unable to add component: Component is not registered.", false, LogType.Error );
-
-			return InsertComponent( index, ComponentRegister.Manager.Create<T>(), replace );
-		}
-
-		/// <summary>
-		///   Inserts a range of components to the stack at the given index.
-		/// </summary>
-		/// <param name="index">
-		///   The index to insert the components.
-		/// </param>
-		/// <param name="comps">
-		///   The component range to add.
-		/// </param>
-		/// <param name="replace">
-		///   If an already existing component should be replaced.
-		/// </param>
-		/// <returns>
-		///   True if comps is not null and all componenta were added successfully, otherwise false.
-		/// </returns>
-		public bool InsertComponentRange( int index, IEnumerable<MiComponent> comps, bool replace = false )
-		{
-			if( comps == null || index < 0 || index > ComponentCount )
-				return false;
-			if( index == ComponentCount )
-				return AddComponentRange( comps, replace );
-
-			int i = index;
-
-			foreach( MiComponent c in comps )
-			{
-				if( !InsertComponent( i, c, replace ) )
-					return false;
-
-				i++;
-			}
 
 			return true;
 		}
