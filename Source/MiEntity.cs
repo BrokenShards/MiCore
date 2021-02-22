@@ -97,24 +97,6 @@ namespace MiCore
 			Window       = window;
 			m_components = new List<MiComponent>();
 		}
-		/// <summary>
-		///   Constructor setting the object ID, name and optionally the target render window.
-		/// </summary>
-		/// <param name="id">
-		///   The object ID.
-		/// </param>
-		/// <param name="name">
-		///   The object name.
-		/// </param>
-		/// <param name="window">
-		///   The target window.
-		/// </param>
-		public MiEntity( string id, string name, RenderWindow window = null )
-		:	base( id, name )
-		{
-			Window       = window;
-			m_components = new List<MiComponent>();
-		}
 
 		/// <summary>
 		///   A reference to the target render window.
@@ -361,6 +343,187 @@ namespace MiCore
 		}
 
 		/// <summary>
+		///   Gets all immediate children that contain the given component.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type.
+		/// </typeparam>
+		/// <returns>
+		///   All immediate children that contain the given component.
+		/// </returns>
+		public MiEntity[] GetChildrenWithComponent<T>() where T : MiComponent, new()
+		{
+			List<MiEntity> ents = new List<MiEntity>();
+
+			foreach( MiEntity e in Children )
+				if( e.HasComponent<T>() )
+					ents.Add( e );
+
+			return ents.ToArray();
+		}
+		/// <summary>
+		///   Gets all immediate children that contain the given component.
+		/// </summary>
+		/// <param name="typename">
+		///   The type name of the component.
+		/// </param>
+		/// <returns>
+		///   All immediate children that contain the given component.
+		/// </returns>
+		public MiEntity[] GetChildrenWithComponent( string typename )
+		{
+			List<MiEntity> ents = new List<MiEntity>();
+
+			foreach( MiEntity e in Children )
+				if( e.HasComponent( typename ) )
+					ents.Add( e );
+
+			return ents.ToArray();
+		}
+
+		/// <summary>
+		///   Recursively gets all children that contain the given component.
+		/// </summary>
+		/// <typeparam name="T">
+		///   The component type.
+		/// </typeparam>
+		/// <returns>
+		///   All immediate children that contain the given component.
+		/// </returns>
+		public MiEntity[] GetAllChildrenWithComponent<T>() where T : MiComponent, new()
+		{
+			List<MiEntity> ents = new List<MiEntity>();
+
+			ents.AddRange( GetChildrenWithComponent<T>() );
+
+			foreach( MiEntity e in Children )
+				ents.AddRange( e.GetAllChildrenWithComponent<T>() );
+
+			return ents.ToArray();
+		}
+		/// <summary>
+		///   Recursively gets all immediate children that contain the given component.
+		/// </summary>
+		/// <param name="typename">
+		///   The type name of the component.
+		/// </param>
+		/// <returns>
+		///   All immediate children that contain the given component.
+		/// </returns>
+		public MiEntity[] GetAllChildrenWithComponent( string typename )
+		{
+			List<MiEntity> ents = new List<MiEntity>();
+
+			ents.AddRange( GetChildrenWithComponent( typename ) );
+
+			foreach( MiEntity e in Children )
+				ents.AddRange( e.GetAllChildrenWithComponent( typename ) );
+
+			return ents.ToArray();
+		}
+
+		/// <summary>
+		///   Gets all immediate children that contain any of the given components.
+		/// </summary>
+		/// <param name="types">
+		///   The type names of the components.
+		/// </param>
+		/// <returns>
+		///   All immediate children that contain any of the given components.
+		/// </returns>
+		public MiEntity[] GetChildrenWithAny( params string[] types )
+		{
+			List<MiEntity> ents = new List<MiEntity>();
+
+			foreach( MiEntity e in Children )
+			{
+				foreach( string typename in types )
+				{
+					if( e.HasComponent( typename ) )
+					{
+						ents.Add( e );
+						break;
+					}
+				}
+			}
+
+			return ents.ToArray();
+		}
+		/// <summary>
+		///   Gets all immediate children that contain all of the given components.
+		/// </summary>
+		/// <param name="types">
+		///   The type names of the components.
+		/// </param>
+		/// <returns>
+		///   All immediate children that contain all of the given components.
+		/// </returns>
+		public MiEntity[] GetChildrenWithAll( params string[] types )
+		{
+			List<MiEntity> ents = new List<MiEntity>();
+
+			foreach( MiEntity e in Children )
+			{
+				bool contains = true;
+
+				foreach( string typename in types )
+				{
+					if( !e.HasComponent( typename ) )
+					{
+						contains = false;
+						break;
+					}
+				}
+
+				if( contains )
+					ents.Add( e );
+			}
+
+			return ents.ToArray();
+		}
+
+		/// <summary>
+		///   Recursively gets all children that contain any of the given components.
+		/// </summary>
+		/// <param name="types">
+		///   The type names of the components.
+		/// </param>
+		/// <returns>
+		///   All children that contain any of the given components.
+		/// </returns>
+		public MiEntity[] GetAllChildrenWithAny( params string[] types )
+		{
+			List<MiEntity> ents = new List<MiEntity>();
+
+			ents.AddRange( GetChildrenWithAny( types ) );
+
+			foreach( MiEntity e in Children )
+				ents.AddRange( e.GetAllChildrenWithAny( types ) );
+
+			return ents.ToArray();
+		}
+		/// <summary>
+		///   Recursively gets all children that contain all of the given components.
+		/// </summary>
+		/// <param name="types">
+		///   The type names of the components.
+		/// </param>
+		/// <returns>
+		///   All children that contain all of the given components.
+		/// </returns>
+		public MiEntity[] GetAllChildrenWithAll( params string[] types )
+		{
+			List<MiEntity> ents = new List<MiEntity>();
+
+			ents.AddRange( GetChildrenWithAll( types ) );
+
+			foreach( MiEntity e in Children )
+				ents.AddRange( e.GetAllChildrenWithAll( types ) );
+
+			return ents.ToArray();
+		}
+
+		/// <summary>
 		///   Adds a new component to the stack.
 		/// </summary>
 		/// <typeparam name="T">
@@ -415,10 +578,11 @@ namespace MiCore
 		/// </returns>
 		public bool AddComponent( MiComponent comp, bool replace = false )
 		{
-			if( !IsCompatible( comp ) )
-				return false;
 			if( m_components.Contains( comp ) )
 				return true;
+
+			if( !IsCompatible( comp ) )
+				return false;			
 
 			if( HasComponent( comp.TypeName ) )
 			{
@@ -431,12 +595,28 @@ namespace MiCore
 			comp.Parent = this;
 			m_components.Add( comp );
 
-			foreach( string r in comp.RequiredComponents )
-				if( !HasComponent( r ) )
-					if( !AddComponent( ComponentRegister.Manager.Create( r ) ) )
-						return false;
+			bool result = true;
 
-			return true;
+			foreach( string r in comp.RequiredComponents )
+			{
+				if( !HasComponent( r ) )
+				{
+					if( !AddComponent( ComponentRegister.Manager.Create( r ) ) )
+					{
+						result = false;
+						break;
+					}
+				}
+				else
+				{
+					MoveComponent( ComponentIndex( r ), ComponentCount );
+				}
+			}
+
+			if( !result )
+				m_components.RemoveAt( m_components.Count - 1 );
+
+			return result;
 		}
 
 		/// <summary>
@@ -460,6 +640,39 @@ namespace MiCore
 				if( !AddComponent( c, replace ) )
 					return false;
 
+			return true;
+		}
+
+		/// <summary>
+		///   Moves a component from one position to another in the list.
+		/// </summary>
+		/// <param name="from">
+		///   The index of the component to move.
+		/// </param>
+		/// <param name="to">
+		///   The destination to move the component. If >= <see cref="ComponentCount"/>, it will be
+		///   added onto the end.
+		/// </param>
+		/// <returns>
+		///   True if from and to are within range and the move was successful, otherwise false.
+		/// </returns>
+		public bool MoveComponent( int from, int to )
+		{
+			if( from < 0 || from >= ComponentCount ||
+				to   < 0 )
+				return false;
+
+			if( from == to )
+				return true;
+
+			MiComponent c = GetComponent( from );
+
+			if( to >= ComponentCount )
+				m_components.Add( c );
+			else
+				m_components.Insert( to, c );
+
+			m_components.RemoveAt( from );
 			return true;
 		}
 
@@ -809,6 +1022,12 @@ namespace MiCore
 			sb.Append( nameof( MiEntity ) );
 
 			sb.Append( " " );
+			sb.Append( nameof( ID ) );
+			sb.Append( "=\"" );
+			sb.Append( ID );
+			sb.AppendLine( "\"" );
+
+			sb.Append( "        " );
 			sb.Append( nameof( Enabled ) );
 			sb.Append( "=\"" );
 			sb.Append( Enabled );
@@ -817,19 +1036,7 @@ namespace MiCore
 			sb.Append( "        " );
 			sb.Append( nameof( Visible ) );
 			sb.Append( "=\"" );
-			sb.Append( Enabled );
-			sb.AppendLine( "\"" );
-
-			sb.Append( "        " );
-			sb.Append( nameof( ID ) );
-			sb.Append( "=\"" );
-			sb.Append( ID );
-			sb.AppendLine( "\"" );
-
-			sb.Append( "        " );
-			sb.Append( nameof( Name ) );
-			sb.Append( "=\"" );
-			sb.Append( Name );
+			sb.Append( Visible );			
 			sb.AppendLine( "\">" );
 
 			for( int i = 0; i < ComponentCount; i++ )

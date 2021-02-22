@@ -32,7 +32,7 @@ namespace MiCore
 	/// <summary>
 	///   Base class for tree-based node objects.
 	/// </summary>
-	public abstract class MiNode<T> : MiObject, INamable, IIdentifiable<string>, IEnumerable<T>, IEquatable<T>
+	public abstract class MiNode<T> : MiObject, IIdentifiable<string>, IEnumerable<T>, IEquatable<T>
 		where T : MiNode<T>, new()
 	{
 		/// <summary>
@@ -42,7 +42,6 @@ namespace MiCore
 		:	base()
 		{
 			ID         = Identifiable.NewStringID( nameof( MiNode<T> ) );
-			Name       = Naming.NewName( nameof( MiNode<T> ) );
 			Parent     = null;
 			m_children = new List<T>();
 		}
@@ -59,7 +58,6 @@ namespace MiCore
 		:	base( n )
 		{
 			ID     = new string( n.ID.ToCharArray() ) + "_copy";
-			Name   = new string( n.Name.ToCharArray() );
 			Parent = n.Parent;
 
 			m_children = n.HasChildren ? new List<T>( n.ChildCount ) : new List<T>();
@@ -73,22 +71,18 @@ namespace MiCore
 					throw new InvalidOperationException( "Failed adding coppied node to parent." );
 		}
 		/// <summary>
-		///   Constructor setting the ID and optionally the name and parent.
+		///   Constructor setting the ID and optionally the parent.
 		/// </summary>
 		/// <param name="id">
 		///   Node ID.
 		/// </param>
-		/// <param name="name">
-		///   Node name.
-		/// </param>
 		/// <param name="parent">
 		///   The parent of the node.
 		/// </param>
-		public MiNode( string id, string name = null, T parent = null )
+		public MiNode( string id, T parent = null )
 		:	base()
 		{
 			ID         = id;
-			Name       = name;
 			Parent     = parent;
 			m_children = new List<T>();
 		}
@@ -100,14 +94,6 @@ namespace MiCore
 		{
 			get { return m_id; }
 			set { m_id = string.IsNullOrWhiteSpace( value ) ? Identifiable.NewStringID( nameof( MiNode<T> ) ) : Identifiable.AsValid( value ); }
-		}
-		/// <summary>
-		///   The object name.
-		/// </summary>
-		public string Name
-		{
-			get { return m_name; }
-			set { m_name = string.IsNullOrWhiteSpace( value ) ? Naming.NewName( nameof( MiNode<T> ) ) : Naming.AsValid( value, ' ' ); }
 		}
 
 		/// <summary>
@@ -281,7 +267,22 @@ namespace MiCore
 		/// </returns>
 		public bool HasChild( string id, bool recursive = false )
 		{
-			if( !HasChildren || !Identifiable.IsValid( id ) )
+			if( string.IsNullOrEmpty( id ) || !HasChildren )
+				return false;
+
+			if( id.Contains( "/" ) )
+			{
+				int slash = id.IndexOf( "/" );
+
+				string i = id.Substring( 0, slash );
+
+				if( !HasChild( i ) )
+					return false;
+
+				return GetChild( i ).HasChild( id.Substring( slash + 1 ), recursive );
+			}
+
+			if( !Identifiable.IsValid( id ) )
 				return false;
 
 			foreach( T e1 in m_children )
@@ -292,36 +293,6 @@ namespace MiCore
 				if( recursive )
 					foreach( T e2 in e1 )
 						if( e2.HasChild( id, true ) )
-							return true;
-			}
-
-			return false;
-		}
-		/// <summary>
-		///   If the node contains a child with the given name.
-		/// </summary>
-		/// <param name="name">
-		///   The node name.
-		/// </param>
-		/// <param name="recursive">
-		///   If children of children should be checked.
-		/// </param>
-		/// <returns>
-		///   True if the node contains a child with the given name, otherwise false.
-		/// </returns>
-		public bool HasChildNamed( string name, bool recursive = false )
-		{
-			if( !HasChildren || !Naming.IsValid( name ) )
-				return false;
-
-			foreach( T e1 in m_children )
-			{
-				if( e1.Name.Equals( name ) )
-					return true;
-
-				if( recursive )
-					foreach( T e2 in e1 )
-						if( e2.HasChildNamed( name, true ) )
 							return true;
 			}
 
@@ -358,7 +329,22 @@ namespace MiCore
 		/// </returns>
 		public T GetChild( string id, bool recursive = false )
 		{
-			if( !Identifiable.IsValid( id ) || !HasChildren )
+			if( string.IsNullOrEmpty( id ) || !HasChildren )
+				return null;
+
+			if( id.Contains( "/" ) )
+			{
+				int slash = id.IndexOf( "/" );
+
+				string i = id.Substring( 0, slash );
+
+				if( !HasChild( i ) )
+					return null;
+
+				return GetChild( i ).GetChild( id.Substring( slash + 1 ), recursive );
+			}
+
+			if( !Identifiable.IsValid( id ) )
 				return null;
 
 			foreach( T e1 in m_children )
@@ -379,120 +365,6 @@ namespace MiCore
 			}
 
 			return null;
-		}
-		/// <summary>
-		///   Gets the first child node with the given name.
-		/// </summary>
-		/// <param name="name">
-		///   node name.
-		/// </param>
-		/// <param name="recursive">
-		///   Should child entities be searched recursively.
-		/// </param>
-		/// <returns>
-		///   The node with the given name if it exists, otherwise null.
-		/// </returns>
-		public T GetFirstChild( string name, bool recursive = false )
-		{
-			if( !Naming.IsValid( name ) || !HasChildren )
-				return null;
-
-			foreach( T e1 in m_children )
-			{
-				if( e1.Name.Equals( name ) )
-					return e1;
-
-				if( recursive )
-				{
-					foreach( T e2 in e1 )
-					{
-						T c = e2.GetFirstChild( name, true );
-
-						if( c != null )
-							return c;
-					}
-				}
-			}
-
-			return null;
-		}
-		/// <summary>
-		///   Gets the last child node with the given name.
-		/// </summary>
-		/// <param name="name">
-		///   node name.
-		/// </param>
-		/// <param name="recursive">
-		///   Should child entities be searched recursively.
-		/// </param>
-		/// <returns>
-		///   The node with the given name if it exists, otherwise null.
-		/// </returns>
-		public T GetLastChild( string name, bool recursive = false )
-		{
-			if( !Naming.IsValid( name ) || !HasChildren )
-				return null;
-
-			T ent = null;
-
-			foreach( T e1 in m_children )
-			{
-				if( e1.Name.Equals( name ) )
-					ent = e1;
-
-				if( recursive )
-				{
-					foreach( T e2 in e1 )
-					{
-						T c = e2.GetFirstChild( name, true );
-
-						if( c != null )
-							ent = c;
-					}
-				}
-			}
-
-			return ent;
-		}
-
-		/// <summary>
-		///   Gets all child entities with the given name.
-		/// </summary>
-		/// <param name="name">
-		///   node name.
-		/// </param>
-		/// <param name="recursive">
-		///   Should child entities be searched recursively.
-		/// </param>
-		/// <returns>
-		///   All child entities with the given name or an empty array if there are no matches.
-		/// </returns>
-		public T[] GetChildren( string name, bool recursive = false )
-		{
-			List<T> children = new List<T>();
-
-			if( !Naming.IsValid( name ) || !HasChildren )
-				return children.ToArray();
-
-			foreach( T e1 in m_children )
-			{
-				if( e1.Name.Equals( name ) )
-					children.Add( e1 );
-
-				if( !recursive )
-					continue;
-				
-				foreach( T e2 in e1 )
-				{
-					T[] c = e2.GetChildren( name, true );
-					
-					if( c != null )
-						foreach( T ce in c )
-							children.Add( ce );
-				}
-			}
-
-			return children.ToArray();
 		}
 
 		/// <summary>
@@ -615,7 +487,22 @@ namespace MiCore
 		/// </returns>
 		public bool RemoveChild( string id, bool recursive = false )
 		{
-			if( !Identifiable.IsValid( id ) || !HasChildren )
+			if( string.IsNullOrEmpty( id ) || !HasChildren )
+				return false;
+
+			if( id.Contains( "/" ) )
+			{
+				int slash = id.IndexOf( "/" );
+
+				string i = id.Substring( 0, slash );
+
+				if( !HasChild( i ) )
+					return false;
+
+				return GetChild( i ).RemoveChild( id.Substring( slash + 1 ), recursive );
+			}
+
+			if( !Identifiable.IsValid( id ) )
 				return false;
 
 			for( int i = 0; i < ChildCount; i++ )
@@ -714,7 +601,22 @@ namespace MiCore
 		/// </returns>
 		public T ReleaseChild( string id, bool recursive = false )
 		{
-			if( !Identifiable.IsValid( id ) || !HasChildren )
+			if( string.IsNullOrEmpty( id ) || !HasChildren )
+				return null;
+
+			if( id.Contains( "/" ) )
+			{
+				int slash = id.IndexOf( "/" );
+
+				string i = id.Substring( 0, slash );
+
+				if( !HasChild( i ) )
+					return null;
+
+				return GetChild( i ).ReleaseChild( id.Substring( slash + 1 ), recursive );
+			}
+
+			if( !Identifiable.IsValid( id ) )
 				return null;
 
 			for( int i = 0; i < ChildCount; i++ )
@@ -794,44 +696,6 @@ namespace MiCore
 
 			return -1;
 		}
-		/// <summary>
-		///   Returns the first index of the child with the given name.
-		/// </summary>
-		/// <param name="name">
-		///   The child node name.
-		/// </param>
-		/// <returns>
-		///   The index of the child node if it exists, otherwise -1.
-		/// </returns>
-		public int FirstChildIndex( string name )
-		{
-			if( Naming.IsValid( name ) )
-				for( int i = 0; i < ChildCount; i++ )
-					if( m_children[ i ].Name.Equals( name ) )
-						return i;
-
-			return -1;
-		}
-		/// <summary>
-		///   Returns the last index of the child with the given name.
-		/// </summary>
-		/// <param name="name">
-		///   The child node name.
-		/// </param>
-		/// <returns>
-		///   The index of the child node if it exists, otherwise -1.
-		/// </returns>
-		public int LastChildIndex( string name )
-		{
-			int index = -1;
-
-			if( Naming.IsValid( name ) )
-				for( int i = 0; i < ChildCount; i++ )
-					if( m_children[ i ].Name.Equals( name ) )
-						index = i;
-
-			return index;
-		}
 
 		/// <summary>
 		///   Attempts to deserialize the node and its children from the stream.
@@ -849,6 +713,8 @@ namespace MiCore
 
 			try
 			{
+				ID = sr.ReadString();
+
 				int count = sr.ReadInt32();
 				m_children = new List<T>( count );
 
@@ -885,6 +751,7 @@ namespace MiCore
 
 			try
 			{
+				sw.Write( ID );
 				sw.Write( ChildCount );
 
 				for( int i = 0; i < ChildCount; i++ )
@@ -911,6 +778,9 @@ namespace MiCore
 		{
 			if( !base.LoadFromXml( element ) )
 				return false;
+
+			if( element.HasAttribute( nameof( ID ) ) )
+				ID = element.GetAttribute( nameof( ID ) );
 
 			RemoveAllChildren();
 			XmlElement child = element[ nameof( Children ) ];
@@ -946,6 +816,12 @@ namespace MiCore
 
 			sb.Append( "<MiNode " );
 
+			sb.Append( nameof( ID ) );
+			sb.Append( "=\"" );
+			sb.Append( ID );
+			sb.AppendLine( "\"" );
+
+			sb.Append( "        " );
 			sb.Append( nameof( Enabled ) );
 			sb.Append( "=\"" );
 			sb.Append( Enabled );
@@ -954,19 +830,7 @@ namespace MiCore
 			sb.Append( "        " );
 			sb.Append( nameof( Visible ) );
 			sb.Append( "=\"" );
-			sb.Append( Enabled );
-			sb.AppendLine( "\"" );
-
-			sb.Append( "        " );
-			sb.Append( nameof( ID ) );
-			sb.Append( "=\"" );
-			sb.Append( ID );
-			sb.AppendLine( "\"" );
-
-			sb.Append( "        " );
-			sb.Append( nameof( Name ) );
-			sb.Append( "=\"" );
-			sb.Append( Name );
+			sb.Append( Visible );
 			sb.AppendLine( "\">" );
 
 			if( HasChildren )
@@ -998,8 +862,7 @@ namespace MiCore
 		/// </returns>
 		public virtual bool Equals( T other )
 		{
-			if( !base.Equals( other ) || !Name.Equals( other.Name ) || Parent != other.Parent ||
-				ChildCount != other.ChildCount )
+			if( !base.Equals( other ) || Parent != other.Parent || ChildCount != other.ChildCount )
 				return false;
 
 			for( int i = 0; i < ChildCount; i++ )
@@ -1032,8 +895,7 @@ namespace MiCore
 			return ( (IEnumerable)m_children ).GetEnumerator();
 		}
 
-		string  m_id, 
-		        m_name;
+		string  m_id;
 		T       m_parent;
 		List<T> m_children;
 	}

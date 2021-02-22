@@ -11,9 +11,21 @@ SharpTest and is used as the core framework for my games and applications.
 See `MiCoreTest/Tests/` for example usage.
 
 ## TODO
-- Look into why job tests occasionally fail.
 
 ## Changelog
+
+### Version 0.9.0
+- Added functionality to `MiEntity` for retrieving children by component.
+- Fixed bug with `MiEntity.AddComponent` where if the component is added successfully, but adding
+  one of the required components fails, the leftover components are not removed.
+- Fixed bug where `MiNode<T>` was not saving and loading its ID in `LoadFromStream(BinaryReader)`,
+  `SaveToStream(BinaryWriter)` and `LoadFromXml(XmlElement)`.
+- Fixed bug where `MiNode<T>.ToString()` and `MiEntity.ToString()` mixed up the value for `Visible`
+  with `Enabled`.
+- `MiNode<T>` is no longer `INamable` and no longer has `Name` as `IIdentifiable<string>` with 'ID'
+  does the job.
+- `MiNode.HasChild(string,bool)`, `MiNode.GetChild(string,bool)`, `MiNode.RemoveChild(string,bool)`
+  and `MiNode.ReleaseChild(string,bool)` now all support path-like syntax to access children.
 
 ### Version 0.8.0
 - When adding a component to an entity, its required components are now added after the component

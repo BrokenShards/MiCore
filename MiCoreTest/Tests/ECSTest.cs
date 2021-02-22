@@ -485,8 +485,8 @@ namespace MiCore.Test
 				public TestNode( TestNode t )
 				:	base( t )
 				{ }
-				public TestNode( string id, string name = null )
-				:	base( id, name )
+				public TestNode( string id )
+				:	base( id )
 				{ }
 
 				public override object Clone()
@@ -499,13 +499,13 @@ namespace MiCore.Test
 			{
 				Logger.Log( "Running MiNode tests..." );
 
-				using( TestNode node = new TestNode( "root", "Root Node" ) )
+				using( TestNode node = new TestNode( "root" ) )
 				{
 					int count = 25;
 
 					// Iterating through adding children to the root node.
 					for( int i = 0; i < count; i++ )
-						if( !node.AddChild( new TestNode( "child" + i.ToString(), "Child " + i.ToString() ), true ) )
+						if( !node.AddChild( new TestNode( "child" + i.ToString() ), true ) )
 							return Logger.LogReturn( "Failed: Unable to add valid children.", false, LogType.Error );
 
 					// Ensuring the right amount of children were added.
@@ -537,10 +537,10 @@ namespace MiCore.Test
 
 				// Create a new job by assigning it a delegate.
 				MiJob job = new MiJob( TestDelegate );
-				MiEntity ent = new MiEntity( "Tester", "Test Entity" );
+				MiEntity ent = new MiEntity( "Tester" );
 
 				for( int i = 0; i < 500; i++ )
-					if( !ent.AddChild( new MiEntity( "L" + i.ToString(), "Level" + i.ToString() ) ) )
+					if( !ent.AddChild( new MiEntity( "L" + i.ToString() ) ) )
 						return Logger.LogReturn( "Failed! Unable to add child.", false, LogType.Error );
 
 				// Run the job on the entity.
@@ -615,10 +615,10 @@ namespace MiCore.Test
 				if( !list.Add( new MiJob( TestDelegate4 ), new MiJob( TestDelegate5 ) ) )
 					return Logger.LogReturn( "Failed! Unable to add jobs to list.", false, LogType.Error );
 
-				MiEntity ent = new MiEntity( "Tester", "Test Entity" );
+				MiEntity ent = new MiEntity( "Tester" );
 
 				for( int i = 0; i < 200; i++ )
-					if( !ent.AddChild( new MiEntity( "L" + i.ToString(), "Level" + i.ToString() ) ) )
+					if( !ent.AddChild( new MiEntity( "L" + i.ToString() ) ) )
 						return Logger.LogReturn( "Failed! Unable to add child.", false, LogType.Error );
 
 				// Run the job list on the entity.
@@ -709,10 +709,10 @@ namespace MiCore.Test
 				if( man.Count != 4 )
 					return Logger.LogReturn( "Failed! Job manager reporting wrong job count.", false, LogType.Error );
 
-				MiEntity ent = new MiEntity( "Tester", "Test Entity" );
+				MiEntity ent = new MiEntity( "Tester" );
 
 				for( int i = 0; i < 200; i++ )
-					if( !ent.AddChild( new MiEntity( "L" + i.ToString(), "Level" + i.ToString() ) ) )
+					if( !ent.AddChild( new MiEntity( "L" + i.ToString() ) ) )
 						return Logger.LogReturn( "Failed! Unable to add child.", false, LogType.Error );
 
 				// Run all jobs in the manager in priority order on the entity.
