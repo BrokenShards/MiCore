@@ -25,6 +25,7 @@ using System.IO;
 using System.Xml;
 
 using SFML.Graphics;
+using SFML.Window;
 
 namespace MiCore
 {
@@ -109,7 +110,7 @@ namespace MiCore
 		/// <param name="dt">
 		///   Delta time.
 		/// </param>
-		public void Update( float dt )
+		public virtual void Update( float dt )
 		{
 			if( Enabled )
 				OnUpdate( dt );

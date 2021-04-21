@@ -42,7 +42,7 @@ namespace MiCore
 		public MiEntity()
 		:	base()
 		{
-			Window       = null;
+			m_window     = null;
 			m_components = new List<MiComponent>();
 		}
 		/// <summary>
@@ -57,7 +57,7 @@ namespace MiCore
 		public MiEntity( MiEntity ent )
 		:	base( ent )
 		{
-			Window = ent.Window;
+			m_window = ent.Window;
 
 			if( ent.ComponentCount == 0 )
 				m_components = new List<MiComponent>();
@@ -79,7 +79,7 @@ namespace MiCore
 		public MiEntity( RenderWindow window )
 		:	base()
 		{
-			Window       = window;
+			m_window     = window;
 			m_components = new List<MiComponent>();
 		}
 		/// <summary>
@@ -94,7 +94,7 @@ namespace MiCore
 		public MiEntity( string id, RenderWindow window = null )
 		:	base( id )
 		{
-			Window       = window;
+			m_window     = window;
 			m_components = new List<MiComponent>();
 		}
 
@@ -106,7 +106,9 @@ namespace MiCore
 			get { return m_window; }
 			set
 			{
+				UnsubscribeEvents();
 				m_window = value;
+				SubscribeEvents();
 
 				if( HasChildren )
 					foreach( MiEntity e in Children )
@@ -116,11 +118,42 @@ namespace MiCore
 		}
 
 		/// <summary>
+		///   Unsubscribes window events, switches the target window and subscribes window events.
+		/// </summary>
+		/// <param name="window">
+		///   The new target window.
+		/// </param>
+		public void ChangeWindow( RenderWindow window )
+		{
+			if( Window != null )
+				foreach( MiComponent c in m_components )
+					c?.UnsubscribeEvents();
+
+			Window = window;
+
+			if( Window != null )
+				foreach( MiComponent c in m_components )
+					c?.SubscribeEvents();
+
+			if( HasChildren )
+				foreach( MiEntity e in Children )
+					e?.ChangeWindow( window );
+		}
+
+		/// <summary>
 		///   The amount of components the stack contains.
 		/// </summary>
 		public int ComponentCount
 		{
 			get { return m_components.Count; }
+		}
+
+		/// <summary>
+		///   Gets an array containing all components owned by the entity.
+		/// </summary>
+		public MiComponent[] Components
+		{
+			get { return m_components.ToArray(); }
 		}
 
 		/// <summary>
@@ -592,10 +625,17 @@ namespace MiCore
 				RemoveComponent( comp.TypeName );
 			}
 
-			comp.Parent = this;
-			m_components.Add( comp );
+			List<string> added = new List<string>();
 
-			bool result = true;
+			comp.Parent = this;
+
+			if( Window != null )
+				comp.SubscribeEvents();
+
+			m_components.Add( comp );
+			added.Add( comp.TypeName );
+
+			bool result = true;			
 
 			foreach( string r in comp.RequiredComponents )
 			{
@@ -606,6 +646,8 @@ namespace MiCore
 						result = false;
 						break;
 					}
+
+					added.Add( r );
 				}
 				else
 				{
@@ -614,7 +656,12 @@ namespace MiCore
 			}
 
 			if( !result )
-				m_components.RemoveAt( m_components.Count - 1 );
+			{
+				foreach( string r in added )
+					RemoveComponent( r );
+			}
+			else
+				comp.OnAdd();
 
 			return result;
 		}
@@ -710,8 +757,9 @@ namespace MiCore
 				if( i != index && m_components[ i ].Requires( m_components[ index ].TypeName ) )
 					rem.Add( m_components[ i ].TypeName );
 
-			m_components[ index ].Dispose();
-			m_components[ index ] = null;
+			m_components[ index ]?.UnsubscribeEvents();
+			m_components[ index ]?.OnRemove();
+			m_components[ index ]?.Dispose();
 			m_components.RemoveAt( index );
 
 			foreach( string s in rem )
@@ -767,6 +815,8 @@ namespace MiCore
 					rem.Add( m_components[ i ].TypeName );
 
 			MiComponent result = m_components[ index ];
+			result.UnsubscribeEvents();
+			result.OnRemove();
 			m_components.RemoveAt( index );
 
 			foreach( string s in rem )
@@ -799,7 +849,7 @@ namespace MiCore
 			List<MiComponent> list = new List<MiComponent>();
 
 			while( ComponentCount > 0 )
-				list.Add( ReleaseComponent( 1 ) );
+				list.Add( ReleaseComponent( 0 ) );
 
 			return list.ToArray();
 		}
@@ -810,34 +860,95 @@ namespace MiCore
 		public void ClearComponents()
 		{
 			foreach( MiComponent c in m_components )
+			{
+				c?.UnsubscribeEvents();
+				c?.OnRemove();
 				c?.Dispose();
+			}
 
 			m_components.Clear();
 		}
 
 		/// <summary>
-		///   To be called on TextEntered event. Calls <see cref="MiComponent.OnTextEntered(TextEventArgs)"/>
-		///   for all enabled components for this entity and all child entities.
+		///   Refreshes components and child entities.
 		/// </summary>
-		/// <param name="e">
-		///   The event args.
-		/// </param>
-		public void TextEntered( TextEventArgs e )
+		public void Refresh()
 		{
-			if( e != null && Enabled )
+			for( int i = 0; i < ComponentCount; i++ )
 			{
-				foreach( MiComponent c in m_components )
-					c.TextEntered( e );
-
-				if( HasChildren )
-					foreach( MiEntity en in AllChildren )
-						foreach( MiComponent c in en.m_components )
-							c.TextEntered( e );
+				m_components[ i ].Parent = this;
+				m_components[ i ].Refresh();
+			}
+			foreach( MiEntity e in this )
+			{
+				e.Window = Window;
+				e.Refresh();
 			}
 		}
 
 		/// <summary>
-		///   Updates the component stack and children.
+		///   Updates the object if enabled; called once per frame.
+		/// </summary>
+		/// <param name="dt">
+		///   Delta time.
+		/// </param>
+		public override void Update( float dt )
+		{
+			if( Enabled )
+				OnUpdate( dt );
+			else
+				Refresh();
+		}
+
+		/// <summary>
+		///   Subscribe to window events. 
+		/// </summary>
+		/// <param name="rec">
+		///   Recursively subscribe child entity events?
+		/// </param>
+		/// <returns>
+		///   True on success or false on failure.
+		/// </returns>
+		public bool SubscribeEvents( bool rec = true )
+		{
+			if( Window == null )
+				return false;
+
+			foreach( MiComponent c in m_components )
+				c?.SubscribeEvents();
+
+			if( rec )
+				foreach( MiEntity e in this )
+					e?.SubscribeEvents( rec );
+
+			return true;
+		}
+		/// <summary>
+		///   Unsubscribe to window events. 
+		/// </summary>
+		/// <param name="rec">
+		///   Recursively unsubscribe child entity events?
+		/// </param>
+		/// <returns>
+		///   True on success or false on failure.
+		/// </returns>
+		public bool UnsubscribeEvents( bool rec = true )
+		{
+			if( Window == null )
+				return false;
+
+			foreach( MiComponent c in m_components )
+				c?.UnsubscribeEvents();
+
+			if( rec )
+				foreach( MiEntity e in this )
+					e?.UnsubscribeEvents( rec );
+
+			return true;
+		}
+
+		/// <summary>
+		///   Updates components and child entities.
 		/// </summary>
 		/// <param name="dt">
 		///   Delta time.
@@ -875,7 +986,6 @@ namespace MiCore
 			foreach( MiEntity e in this )
 				e.Draw( target, states );
 		}
-
 		/// <summary>
 		///   Disposes of the object and children.
 		/// </summary>
@@ -910,21 +1020,21 @@ namespace MiCore
 					string type = sr.ReadString();
 
 					if( !ComponentRegister.Manager.Registered( type ) )
-						return Logger.LogReturn( "Failed loading MiEntity: Saved object contains unregistered component name.", false, LogType.Error );
+						return Logger.LogReturn( "Failed loading MiEntity: Saved object contains unregistered component name" + type + ".", false, LogType.Error );
 
 					if( HasComponent( type ) )
 					{
 						if( !GetComponent( type ).LoadFromStream( sr ) )
-							return Logger.LogReturn( "Failed loading MiEntity: Unable to load component from stream.", false, LogType.Error );
+							return Logger.LogReturn( "Failed loading MiEntity: Unable to load component " + type + " from stream.", false, LogType.Error );
 					}
 					else
 					{
 						MiComponent c = ComponentRegister.Manager.Create( type );
 
 						if( !c.LoadFromStream( sr ) )
-							return Logger.LogReturn( "Failed loading MiEntity: Unable to load component from stream.", false, LogType.Error );
-						if( AddComponent( c ) )
-							return Logger.LogReturn( "Failed loading MiEntity: Unable to add component loaded from stream.", false, LogType.Error );
+							return Logger.LogReturn( "Failed loading MiEntity: Unable to load component " + type + " from stream.", false, LogType.Error );
+						if( !AddComponent( c ) )
+							return Logger.LogReturn( "Failed loading MiEntity: Unable to add component " + type + " loaded from stream.", false, LogType.Error );
 					}
 				}
 			}
@@ -958,7 +1068,7 @@ namespace MiCore
 					sw.Write( m_components[ i ].TypeName );
 
 					if( !m_components[ i ].SaveToStream( sw ) )
-						return Logger.LogReturn( "Failed saving MiEntity: Unable to save component to stream.", false, LogType.Error );
+						return Logger.LogReturn( "Failed saving MiEntity: Unable to save component " + m_components[ i ].TypeName + " to stream.", false, LogType.Error );
 				}
 			}
 			catch( Exception e )
@@ -999,11 +1109,11 @@ namespace MiCore
 				MiComponent c = ComponentRegister.Manager.Create( e.Name );
 
 				if( c == null )
-					return Logger.LogReturn( "Unable to load MiEntity: Failed creating component.", false, LogType.Error );
+					return Logger.LogReturn( "Unable to load MiEntity: Failed creating component " + e.Name + ".", false, LogType.Error );
 				if( !c.LoadFromXml( e ) )
-					return Logger.LogReturn( "Unable to load MiEntity: Failed parsing component.", false, LogType.Error );
+					return Logger.LogReturn( "Unable to load MiEntity: Failed parsing component " + e.Name + ".", false, LogType.Error );
 				if( !AddComponent( c ) )
-					return Logger.LogReturn( "Unable to load MiEntity: Failed adding component.", false, LogType.Error );
+					return Logger.LogReturn( "Unable to load MiEntity: Failed adding component " + e.Name + ".", false, LogType.Error );
 			}
 
 			return true;
