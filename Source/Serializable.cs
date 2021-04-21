@@ -375,6 +375,48 @@ namespace MiCore
 		///   True if the object was successfully loaded and false otherwise.
 		/// </returns>
 		public abstract bool LoadFromXml( XmlElement element );
+		/// <summary>
+		///   Attempts to load the object from an xml file.
+		/// </summary>
+		/// <param name="path">
+		///   The path to the xml file.
+		/// </param>
+		/// <param name="xpath">
+		///   Optional xpath expression to select a single node to load from.
+		/// </param>
+		/// <param name="nsm">
+		///   Optional xml namespace manager.
+		/// </param>
+		/// <returns>
+		///   True on success and false on failure.
+		/// </returns>
+		public bool LoadFromFile( string path, string xpath = null, XmlNamespaceManager nsm = null )
+		{
+			XmlDocument doc = new XmlDocument();
+
+			try
+			{
+				doc.Load( path );
+
+				if( string.IsNullOrWhiteSpace( xpath ) )
+					xpath = null;
+
+				if( xpath == null && !LoadFromXml( doc.DocumentElement ) )
+					return Logger.LogReturn( "Loading XmlLoadable from root element failed.", false, LogType.Error );
+				else if( xpath != null )
+				{
+					if( ( nsm == null && !LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath ) ) ) ||
+						( nsm != null && !LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath, nsm ) ) ) )
+						return Logger.LogReturn( "Loading XmlLoadable from xpath element failed.", false, LogType.Error );
+				}
+			}
+			catch( Exception e )
+			{
+				return Logger.LogReturn( "Loading XmlLoadable from xml element failed: " + e.Message + ".", false, LogType.Error );
+			}
+
+			return true;
+		}
 
 		/// <summary>
 		///   Converts the object to an xml string.
@@ -501,7 +543,7 @@ namespace MiCore
 			{
 				return Logger.LogReturn<T>( "Loading XmlLoadable from xml element failed: " + e.Message + ".", null, LogType.Error );
 			}
-			
+
 			return val;
 		}
 		/// <summary>
