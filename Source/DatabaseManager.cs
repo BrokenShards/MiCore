@@ -29,7 +29,7 @@ namespace MiCore
 	/// <summary>
 	///   Singleton class that manages binary databases.
 	/// </summary>
-	public class DatabaseManager
+	public sealed class DatabaseManager
 	{
 		private DatabaseManager()
 		{

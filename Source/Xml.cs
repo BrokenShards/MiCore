@@ -288,22 +288,30 @@ namespace MiCore
 
 			sb.Append( "<" );
 			sb.Append( name );
-			sb.Append( " " + nameof( Color.R ) + "=\"" );
+			sb.Append( " " );
+			sb.Append( nameof( Color.R ) );
+			sb.Append( "=\"" );
 			sb.Append( col.R );
 			sb.AppendLine( "\"" );
 
 			sb.Append( spaces );
-			sb.Append( " " + nameof( Color.G ) + "=\"" );
+			sb.Append( " " );
+			sb.Append( nameof( Color.G ) );
+			sb.Append( "=\"" );
 			sb.Append( col.G );
 			sb.AppendLine( "\"" );
 
 			sb.Append( spaces );
-			sb.Append( " " + nameof( Color.B ) + "=\"" );
+			sb.Append( " " );
+			sb.Append( nameof( Color.B ) );
+			sb.Append( "=\"" );
 			sb.Append( col.B );
 			sb.AppendLine( "\"" );
 
 			sb.Append( spaces );
-			sb.Append( " " + nameof( Color.A ) + "=\"" );
+			sb.Append( " " );
+			sb.Append( nameof( Color.A ) );
+			sb.Append( "=\"" );
 			sb.Append( col.A );
 			sb.AppendLine( "\"/>" );
 

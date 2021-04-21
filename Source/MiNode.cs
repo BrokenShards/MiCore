@@ -378,7 +378,7 @@ namespace MiCore
 		/// </param>
 		/// <returns>
 		///   True if e is already a child or if it was added successfully, false if e is null, 
-		///   this, or  e is parent or .
+		///   this, or parent or if a child already exists with the same ID and replace is false.
 		/// </returns>
 		public bool AddChild( T e, bool replace = false )
 		{

@@ -14,6 +14,24 @@ See `MiCoreTest/Tests/` for example usage.
 
 ## Changelog
 
+### Version 0.10.0
+- Added generic `TypeRegister` class that is used for registering string IDs to types and using the
+  IDs to create objects of the registered types. `ComponentRegister` inherits from this.
+- Added `SubscribeEvents(Window)` and `UnsubscribeEvents(Window)` virtual methods to `MiObject` to
+  replace `MiComponent` and `MiEntity`'s `TextEntered(TextEventArgs)` method and expand for other
+  events.
+- `MiComponent` now contains virtual functions `OnAdd()` and `OnRemove()` that are triggered when
+  the component is added to and removed from an entity; these are intended to initialize the new
+  parent entities' other components.
+- Added virtual `Refresh()` method to `MiComponent` that is called before `OnUpdate(float)` for
+  refreshing a components' visual elements without updating runtime logic. `MiEntity.Refresh()` is
+  also included as a passthrough. This is so components and entities can be visualized without being
+  interacted with.
+
+### Version 0.9.1
+- Fixed bug where `MiEntity.LoadFromStream(BinaryReader)` would report failure even when it 
+  succeeded.
+
 ### Version 0.9.0
 - Added functionality to `MiEntity` for retrieving children by component.
 - Fixed bug with `MiEntity.AddComponent` where if the component is added successfully, but adding
