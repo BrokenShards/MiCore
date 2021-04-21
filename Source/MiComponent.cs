@@ -80,6 +80,52 @@ namespace MiCore
 		}
 
 		/// <summary>
+		///   Called when the component is added to an entity.
+		/// </summary>
+		public virtual void OnAdd()
+		{ }
+		/// <summary>
+		///   Called when the component is removed from an entity.
+		/// </summary>
+		public virtual void OnRemove()
+		{ }
+
+		/// <summary>
+		///   Refreshes the components visual elements.
+		/// </summary>
+		/// <remarks>
+		///   This method is called before the component is updated and should only set up the
+		///   component to be displayed. It should contain no logic and not respond to any input.
+		/// </remarks>
+		public virtual void Refresh()
+		{ }
+
+		/// <summary>
+		///   Updates the object if enabled; called once per frame.
+		/// </summary>
+		/// <param name="dt">
+		///   Delta time.
+		/// </param>
+		public override void Update( float dt )
+		{
+			Refresh();
+
+			if( Enabled )
+				OnUpdate( dt );
+		}
+
+		/// <summary>
+		///   Subscribe to window events. 
+		/// </summary>
+		public virtual void SubscribeEvents()
+		{ }
+		/// <summary>
+		///   Unsubscribe to window events. 
+		/// </summary>
+		public virtual void UnsubscribeEvents()
+		{ }
+
+		/// <summary>
 		///   Checks if the component requires a component with the given component name.
 		/// </summary>
 		/// <param name="typename">
@@ -190,18 +236,6 @@ namespace MiCore
 		}
 
 		/// <summary>
-		///   Called on TextEntered event.
-		/// </summary>
-		/// <param name="e">
-		///   The event args.
-		/// </param>
-		public void TextEntered( TextEventArgs e )
-		{
-			if( e != null && Enabled )
-				OnTextEntered( e );
-		}
-
-		/// <summary>
 		///   Checks if the object is considered equal to this object.
 		/// </summary>
 		/// <param name="other">
@@ -240,14 +274,5 @@ namespace MiCore
 		{
 			return new string[ 0 ];
 		}
-
-		/// <summary>
-		///   Override this with your TextEntered logic.
-		/// </summary>
-		/// <param name="e">
-		///   The event args.
-		/// </param>
-		protected virtual void OnTextEntered( TextEventArgs e )
-		{ }
 	}
 }
