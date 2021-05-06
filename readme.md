@@ -14,6 +14,11 @@ See `MiCoreTest/Tests/` for example usage.
 
 ## Changelog
 
+### Version 0.11.0
+- Fixed issue where `Namable.AsValid(string,char)` was not using the assigned replacement character
+  and always used an underscore.
+- Minor performance improvements by using a `for` rather than `foreach` loop in certain cases.
+
 ### Version 0.10.0
 - Added generic `TypeRegister` class that is used for registering string IDs to types and using the
   IDs to create objects of the registered types. `ComponentRegister` inherits from this.

@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace MiCore
 {
@@ -56,8 +57,9 @@ namespace MiCore
 			if( string.IsNullOrWhiteSpace( name ) || char.IsWhiteSpace( name[ 0 ] ) )
 				return false;
 
-			foreach( char c in name )
-				if( !char.IsLetterOrDigit( c ) && !char.IsPunctuation( c ) && !char.IsSymbol( c ) && c != ' ' )
+			for( int i = 0; i < name.Length; i++ )
+				if( !char.IsLetterOrDigit( name[ i ] ) && !char.IsPunctuation( name[ i ] ) &&
+					!char.IsSymbol( name[ i ] ) && name[ i ] != ' ' )
 					return false;
 
 			return true;
@@ -101,17 +103,17 @@ namespace MiCore
 				repl = '_';
 
 			string n = name.Trim();
-			string res = string.Empty;
+			StringBuilder res = new StringBuilder( n.Length );
 
 			for( int i = 0; i < n.Length; i++ )
 			{
 				if( !valid_char( n[ i ] ) && n[ i ] != ' ' )
-					res += '_';
+					res.Append( repl );
 				else
-					res += n[ i ];
+					res.Append( n[ i ] );
 			}
 
-			return res;
+			return res.ToString();
 		}
 		/// <summary>
 		///   Returns the given objects' name as a valid name.
@@ -168,7 +170,7 @@ namespace MiCore
 			return result;
 		}
 
-		private static Dictionary<string, ulong> _counter = new Dictionary<string, ulong>();
-		private static Random random = new Random();
+		private static readonly Dictionary<string, ulong> _counter = new Dictionary<string, ulong>();
+		private static readonly Random random = new Random();
 	}
 }

@@ -89,7 +89,7 @@ namespace MiCore
 		/// </summary>
 		public static bool LogFileExists
 		{
-			get { return !string.IsNullOrWhiteSpace( LogPath ) ? File.Exists( LogPath ) : false; }
+			get { return !string.IsNullOrWhiteSpace( LogPath ) && File.Exists( LogPath ); }
 		}
 
 		/// <summary>

@@ -60,22 +60,11 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( Vector2f );
 
-			string spaces = " ";
-
-			for( int i = 0; i < name.Length; i++ )
-				spaces += ' ';
-
 			StringBuilder sb = new StringBuilder();
 
-			sb.Append( "<" );
-			sb.Append( name );
-			sb.Append( " " + nameof( Vector2f.X ) + "=\"" );
-			sb.Append( vec.X );
-			sb.AppendLine( "\"" );
-			sb.Append( spaces );
-			sb.Append( " " + nameof( Vector2f.Y ) + "=\"" );
-			sb.Append( vec.Y );
-			sb.AppendLine( "\"/>" );
+			sb.Append( "<" ).Append( name ).Append( " " )
+				.Append( nameof( Vector2f.X ) ).Append( "=\"" ).Append( vec.X ).Append( "\" " )
+				.Append( nameof( Vector2f.Y ) ).Append( "=\"" ).Append( vec.Y ).Append( "\"/>" );
 
 			return Indent( sb.ToString(), indent );
 		}
@@ -99,22 +88,11 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( Vector2i );
 
-			string spaces = " ";
-
-			for( int i = 0; i < name.Length; i++ )
-				spaces += ' ';
-
 			StringBuilder sb = new StringBuilder();
 
-			sb.Append( "<" );
-			sb.Append( name );
-			sb.Append( " " + nameof( Vector2i.X ) + "=\"" );
-			sb.Append( vec.X );
-			sb.AppendLine( "\"" );
-			sb.Append( spaces );
-			sb.Append( " " + nameof( Vector2i.Y ) + "=\"" );
-			sb.Append( vec.Y );
-			sb.AppendLine( "\"/>" );
+			sb.Append( "<" ).Append( name ).Append( " " )
+				.Append( nameof( Vector2i.X ) ).Append( "=\"" ).Append( vec.X ).Append( "\" " )
+				.Append( nameof( Vector2i.Y ) ).Append( "=\"" ).Append( vec.Y ).Append( "\"/>" );
 
 			return Indent( sb.ToString(), indent );
 		}
@@ -138,22 +116,11 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( Vector2u );
 
-			string spaces = " ";
-
-			for( int i = 0; i < name.Length; i++ )
-				spaces += ' ';
-
 			StringBuilder sb = new StringBuilder();
 
-			sb.Append( "<" );
-			sb.Append( name );
-			sb.Append( " " + nameof( Vector2u.X ) + "=\"" );
-			sb.Append( vec.X );
-			sb.AppendLine( "\"" );
-			sb.Append( spaces );
-			sb.Append( " " + nameof( Vector2u.Y ) + "=\"" );
-			sb.Append( vec.Y );
-			sb.AppendLine( "\"/>" );
+			sb.Append( "<" ).Append( name ).Append( " " )
+				.Append( nameof( Vector2u.X ) ).Append( "=\"" ).Append( vec.X ).Append( "\" " )
+				.Append( nameof( Vector2u.Y ) ).Append( "=\"" ).Append( vec.Y ).Append( "\"/>" );
 
 			return Indent( sb.ToString(), indent );
 		}
@@ -178,33 +145,21 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( FloatRect );
 
-			string spaces = " ";
+			StringBuilder sb = new StringBuilder( name.Length + 2 );
+						
+			for( int i = 0; i < name.Length + 2; i++ )
+				sb.Append( ' ' );
 
-			for( int i = 0; i < name.Length; i++ )
-				spaces += ' ';
+			string spaces = sb.ToString();
 
-			StringBuilder sb = new StringBuilder();
+			sb.Clear();
 
-			sb.Append( "<" );
-			sb.Append( name );
-			sb.Append( " " + nameof( FloatRect.Left ) + "=\"" );
-			sb.Append( rect.Left );
-			sb.AppendLine( "\"" );
-
-			sb.Append( spaces );
-			sb.Append( " " + nameof( FloatRect.Top ) + "=\"" );
-			sb.Append( rect.Top );
-			sb.AppendLine( "\"" );
-
-			sb.Append( spaces );
-			sb.Append( " " + nameof( FloatRect.Width ) + "=\"" );
-			sb.Append( rect.Width );
-			sb.AppendLine( "\"" );
-
-			sb.Append( spaces );
-			sb.Append( " " + nameof( FloatRect.Height ) + "=\"" );
-			sb.Append( rect.Height );
-			sb.AppendLine( "\"/>" );
+			sb.Append( "<" ).Append( name ).Append( " " )
+				.Append( nameof( FloatRect.Left ) ).Append( "=\"" ).Append( rect.Left ).Append( "\" " )
+				.Append( nameof( FloatRect.Top ) ).Append( "=\"" ).Append( rect.Top ).AppendLine( "\"" )
+				.Append( spaces )
+				.Append( nameof( FloatRect.Width ) ).Append( "=\"" ).Append( rect.Width ).Append( "\" " )
+				.Append( nameof( FloatRect.Height ) ).Append( "=\"" ).Append( rect.Height ).Append( "\"/>" );
 
 			return Indent( sb.ToString(), indent );
 		}
@@ -228,33 +183,21 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( IntRect );
 
-			string spaces = " ";
+			StringBuilder sb = new StringBuilder( name.Length + 2 );
+						
+			for( int i = 0; i < name.Length + 2; i++ )
+				sb.Append( ' ' );
 
-			for( int i = 0; i < name.Length; i++ )
-				spaces += ' ';
+			string spaces = sb.ToString();
 
-			StringBuilder sb = new StringBuilder();
+			sb.Clear();
 
-			sb.Append( "<" );
-			sb.Append( name );
-			sb.Append( " " + nameof( IntRect.Left ) + "=\"" );
-			sb.Append( rect.Left );
-			sb.AppendLine( "\"" );
-
-			sb.Append( spaces );
-			sb.Append( " " + nameof( IntRect.Top ) + "=\"" );
-			sb.Append( rect.Top );
-			sb.AppendLine( "\"" );
-
-			sb.Append( spaces );
-			sb.Append( " " + nameof( IntRect.Width ) + "=\"" );
-			sb.Append( rect.Width );
-			sb.AppendLine( "\"" );
-
-			sb.Append( spaces );
-			sb.Append( " " + nameof( IntRect.Height ) + "=\"" );
-			sb.Append( rect.Height );
-			sb.AppendLine( "\"/>" );
+			sb.Append( "<" ).Append( name ).Append( " " )
+				.Append( nameof( IntRect.Left ) ).Append( "=\"" ).Append( rect.Left ).Append( "\" " )
+				.Append( nameof( IntRect.Top ) ).Append( "=\"" ).Append( rect.Top ).AppendLine( "\"" )
+				.Append( spaces )
+				.Append( nameof( IntRect.Width ) ).Append( "=\"" ).Append( rect.Width ).Append( "\" " )
+				.Append( nameof( IntRect.Height ) ).Append( "=\"" ).Append( rect.Height ).Append( "\"/>" );
 
 			return Indent( sb.ToString(), indent );
 		}
@@ -279,41 +222,13 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( Color );
 
-			string spaces = " ";
-
-			for( int i = 0; i < name.Length; i++ )
-				spaces += ' ';
-
 			StringBuilder sb = new StringBuilder();
 
-			sb.Append( "<" );
-			sb.Append( name );
-			sb.Append( " " );
-			sb.Append( nameof( Color.R ) );
-			sb.Append( "=\"" );
-			sb.Append( col.R );
-			sb.AppendLine( "\"" );
-
-			sb.Append( spaces );
-			sb.Append( " " );
-			sb.Append( nameof( Color.G ) );
-			sb.Append( "=\"" );
-			sb.Append( col.G );
-			sb.AppendLine( "\"" );
-
-			sb.Append( spaces );
-			sb.Append( " " );
-			sb.Append( nameof( Color.B ) );
-			sb.Append( "=\"" );
-			sb.Append( col.B );
-			sb.AppendLine( "\"" );
-
-			sb.Append( spaces );
-			sb.Append( " " );
-			sb.Append( nameof( Color.A ) );
-			sb.Append( "=\"" );
-			sb.Append( col.A );
-			sb.AppendLine( "\"/>" );
+			sb.Append( "<" ).Append( name ).Append( " " )
+				.Append( nameof( Color.R ) ).Append( "=\"" ).Append( col.R ).Append( "\" " )
+				.Append( nameof( Color.G ) ).Append( "=\"" ).Append( col.G ).Append( "\" " )
+				.Append( nameof( Color.B ) ).Append( "=\"" ).Append( col.B ).Append( "\" " )
+				.Append( nameof( Color.A ) ).Append( "=\"" ).Append( col.A ).Append( "\"/>" );
 
 			return Indent( sb.ToString(), indent );
 		}
@@ -338,26 +253,12 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( VideoMode );
 
-			string spaces = " ";
-
-			for( int i = 0; i < name.Length; i++ )
-				spaces += ' ';
-
 			StringBuilder sb = new StringBuilder();
 
-			sb.Append( "<" );
-			sb.Append( name );
-			sb.Append( " " + nameof( VideoMode.Width ) + "=\"" );
-			sb.Append( vm.Width );
-			sb.AppendLine( "\"" );
-			sb.Append( spaces );
-			sb.Append( " " + nameof( VideoMode.Height ) + "=\"" );
-			sb.Append( vm.Height );
-			sb.AppendLine( "\"" );
-			sb.Append( spaces );
-			sb.Append( " " + nameof( VideoMode.BitsPerPixel ) + "=\"" );
-			sb.Append( vm.BitsPerPixel );
-			sb.AppendLine( "\"/>" );
+			sb.Append( "<" ).Append( name ).Append( " " )
+				.Append( nameof( VideoMode.Width ) ).Append( "=\"" ).Append( vm.Width ).Append( "\" " )
+				.Append( nameof( VideoMode.Height ) ).Append( "=\"" ).Append( vm.Height ).Append( "\" " )
+				.Append( nameof( VideoMode.BitsPerPixel ) ).Append( "=\"" ).Append( vm.BitsPerPixel ).Append( "\"/>" );
 
 			return Indent( sb.ToString(), indent );
 		}
@@ -633,12 +534,15 @@ namespace MiCore
 		/// </returns>
 		public static string Indent( string lines, uint indent = 1 )
 		{
+			if( lines == null )
+				return null;
+
 			string tabs = string.Empty;
 
 			for( uint i = 0; i < indent; i++ )
 				tabs += '\t';
 
-			if( string.IsNullOrEmpty( lines ) )
+			if( lines.Equals( string.Empty ) )
 				return tabs;
 
 			return tabs + lines.Replace( "\r\n", "\n" ).Replace( "\n", "\n" + tabs ).Replace( "\n", "\r\n" );

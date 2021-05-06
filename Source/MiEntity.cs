@@ -27,7 +27,6 @@ using System.Text;
 using System.Xml;
 
 using SFML.Graphics;
-using SFML.Window;
 
 namespace MiCore
 {
@@ -65,8 +64,8 @@ namespace MiCore
 			{
 				m_components = new List<MiComponent>( ent.ComponentCount );
 
-				foreach( MiComponent c in ent.m_components )
-					if( !AddComponent( (MiComponent)c.Clone(), true ) )
+				for( int i = 0; i < ent.m_components.Count; i++ )
+					if( !AddComponent( (MiComponent)ent.m_components[ i ].Clone(), true ) )
 						throw new InvalidOperationException( "Unable to add coppied component to ComponentStack." );
 			}
 		}
@@ -110,10 +109,14 @@ namespace MiCore
 				m_window = value;
 				SubscribeEvents();
 
-				if( HasChildren )
-					foreach( MiEntity e in Children )
-						if( e != null )
-							e.Window = value;
+				if( !HasChildren )
+					return;
+
+				MiEntity[] children = Children;
+
+				for( int i = 0; i < children.Length; i++ )
+					if( children[ i ] != null )
+						children[ i ].Window = value;
 			}
 		}
 
@@ -126,18 +129,23 @@ namespace MiCore
 		public void ChangeWindow( RenderWindow window )
 		{
 			if( Window != null )
-				foreach( MiComponent c in m_components )
-					c?.UnsubscribeEvents();
+				for( int i = 0; i < ComponentCount; i++ )
+					m_components[ i ]?.UnsubscribeEvents();
 
 			Window = window;
 
 			if( Window != null )
-				foreach( MiComponent c in m_components )
-					c?.SubscribeEvents();
+				for( int i = 0; i < ComponentCount; i++ )
+					m_components[ i ]?.SubscribeEvents();
 
-			if( HasChildren )
-				foreach( MiEntity e in Children )
-					e?.ChangeWindow( window );
+			if( !HasChildren )
+				return;
+
+
+			MiEntity[] children = Children;
+
+			for( int i = 0; i < children.Length; i++ )
+				children[ i ]?.ChangeWindow( window );
 		}
 
 		/// <summary>
@@ -169,17 +177,17 @@ namespace MiCore
 				if( !Identifiable.IsValid( s ) )
 					return false;
 
-				foreach( string l in list )
-					if( l.Equals( s ) )
+				for( int i = 0; i < list.Count; i++ )
+					if( list[ i ].Equals( s ) )
 						return true;
 
 				return false;
 			}
 
-			foreach( MiComponent c in m_components )
-				foreach( string i in c.IncompatibleComponents )
-					if( !ContainsString( i ) )
-						list.Add( i );
+			for( int c = 0; c < ComponentCount; c++ )
+				for( int i = 0; i < list.Count; i++ )
+					if( !ContainsString( m_components[ c ].IncompatibleComponents[ i ] ) )
+						list.Add( m_components[ c ].IncompatibleComponents[ i ] );
 
 			return list.ToArray();
 		}
@@ -214,8 +222,8 @@ namespace MiCore
 
 			string[] incomp = GetIncompatibleComponents();
 
-			foreach( string s in incomp )
-				if( s.Equals( typename ) )
+			for( int i = 0; i < incomp.Length; i++ )
+				if( incomp[ i ].Equals( typename ) )
 					return false;
 
 			return true;
@@ -236,8 +244,8 @@ namespace MiCore
 			if( comp == null || !IsCompatible( comp.TypeName ) )
 				return false;
 
-			foreach( string s in comp.RequiredComponents )
-				if( !IsCompatible( s ) )
+			for( int i = 0; i < comp.RequiredComponents.Length; i++ )
+				if( !IsCompatible( comp.RequiredComponents[ i ] ) )
 					return false;
 
 			return true;
@@ -275,12 +283,12 @@ namespace MiCore
 			if( string.IsNullOrWhiteSpace( type ) )
 				return false;
 
-			foreach( MiComponent c in m_components )
+			for( int i = 0; i < ComponentCount; i++ )
 			{
-				if( c == null )
+				if( m_components[ i ] == null )
 					continue;
 
-				if( c.TypeName.Equals( type ) )
+				if( m_components[ i ].TypeName.Equals( type ) )
 					return true;
 			}
 
@@ -387,10 +395,11 @@ namespace MiCore
 		public MiEntity[] GetChildrenWithComponent<T>() where T : MiComponent, new()
 		{
 			List<MiEntity> ents = new List<MiEntity>();
+			MiEntity[] children = Children;
 
-			foreach( MiEntity e in Children )
-				if( e.HasComponent<T>() )
-					ents.Add( e );
+			for( int i = 0; i < children.Length; i++ )
+				if( children[ i ].HasComponent<T>() )
+					ents.Add( children[ i ] );
 
 			return ents.ToArray();
 		}
@@ -406,10 +415,11 @@ namespace MiCore
 		public MiEntity[] GetChildrenWithComponent( string typename )
 		{
 			List<MiEntity> ents = new List<MiEntity>();
+			MiEntity[] children = Children;
 
-			foreach( MiEntity e in Children )
-				if( e.HasComponent( typename ) )
-					ents.Add( e );
+			for( int i = 0; i < children.Length; i++ )
+				if( children[ i ].HasComponent( typename ) )
+					ents.Add( children[ i ] );
 
 			return ents.ToArray();
 		}
@@ -429,8 +439,10 @@ namespace MiCore
 
 			ents.AddRange( GetChildrenWithComponent<T>() );
 
-			foreach( MiEntity e in Children )
-				ents.AddRange( e.GetAllChildrenWithComponent<T>() );
+			MiEntity[] children = Children;
+
+			for( int i = 0; i < children.Length; i++ )
+				ents.AddRange( children[ i ].GetAllChildrenWithComponent<T>() );
 
 			return ents.ToArray();
 		}
@@ -449,8 +461,10 @@ namespace MiCore
 
 			ents.AddRange( GetChildrenWithComponent( typename ) );
 
-			foreach( MiEntity e in Children )
-				ents.AddRange( e.GetAllChildrenWithComponent( typename ) );
+			MiEntity[] children = Children;
+
+			for( int i = 0; i < children.Length; i++ )
+				ents.AddRange( children[ i ].GetAllChildrenWithComponent( typename ) );
 
 			return ents.ToArray();
 		}
@@ -468,13 +482,15 @@ namespace MiCore
 		{
 			List<MiEntity> ents = new List<MiEntity>();
 
-			foreach( MiEntity e in Children )
+			MiEntity[] children = Children;
+			
+			for( int i = 0; i < children.Length; i++ )
 			{
-				foreach( string typename in types )
+				for( int t = 0; t < types.Length; t++ )
 				{
-					if( e.HasComponent( typename ) )
+					if( children[ i ].HasComponent( types[ t ] ) )
 					{
-						ents.Add( e );
+						ents.Add( children[ i ] );
 						break;
 					}
 				}
@@ -495,13 +511,15 @@ namespace MiCore
 		{
 			List<MiEntity> ents = new List<MiEntity>();
 
-			foreach( MiEntity e in Children )
+			MiEntity[] children = Children;
+
+			for( int i = 0; i < children.Length; i++ )
 			{
 				bool contains = true;
 
-				foreach( string typename in types )
+				for( int t = 0; t < types.Length; t++ )
 				{
-					if( !e.HasComponent( typename ) )
+					if( !children[ i ].HasComponent( types[ t ] ) )
 					{
 						contains = false;
 						break;
@@ -509,7 +527,7 @@ namespace MiCore
 				}
 
 				if( contains )
-					ents.Add( e );
+					ents.Add( children[ i ] );
 			}
 
 			return ents.ToArray();
@@ -530,8 +548,10 @@ namespace MiCore
 
 			ents.AddRange( GetChildrenWithAny( types ) );
 
-			foreach( MiEntity e in Children )
-				ents.AddRange( e.GetAllChildrenWithAny( types ) );
+			MiEntity[] children = Children;
+
+			for( int i = 0; i < children.Length; i++ )
+				ents.AddRange( children[ i ].GetAllChildrenWithAny( types ) );
 
 			return ents.ToArray();
 		}
@@ -550,8 +570,10 @@ namespace MiCore
 
 			ents.AddRange( GetChildrenWithAll( types ) );
 
-			foreach( MiEntity e in Children )
-				ents.AddRange( e.GetAllChildrenWithAll( types ) );
+			MiEntity[] children = Children;
+
+			for( int i = 0; i < children.Length; i++ )
+				ents.AddRange( children[ i ].GetAllChildrenWithAll( types ) );
 
 			return ents.ToArray();
 		}
@@ -637,28 +659,28 @@ namespace MiCore
 
 			bool result = true;			
 
-			foreach( string r in comp.RequiredComponents )
+			for( int i = 0; i < comp.RequiredComponents.Length; i++ )
 			{
-				if( !HasComponent( r ) )
+				if( !HasComponent( comp.RequiredComponents[ i ] ) ) 
 				{
-					if( !AddComponent( ComponentRegister.Manager.Create( r ) ) )
+					if( !AddComponent( ComponentRegister.Manager.Create( comp.RequiredComponents[ i ] ) ) )
 					{
 						result = false;
 						break;
 					}
 
-					added.Add( r );
+					added.Add( comp.RequiredComponents[ i ] );
 				}
 				else
 				{
-					MoveComponent( ComponentIndex( r ), ComponentCount );
+					MoveComponent( ComponentIndex( comp.RequiredComponents[ i ] ), ComponentCount );
 				}
 			}
 
 			if( !result )
 			{
-				foreach( string r in added )
-					RemoveComponent( r );
+				for( int r = 0; r < added.Count; r++ )
+					RemoveComponent( added[ r ] );
 			}
 			else
 				comp.OnAdd();
@@ -762,8 +784,8 @@ namespace MiCore
 			m_components[ index ]?.Dispose();
 			m_components.RemoveAt( index );
 
-			foreach( string s in rem )
-				RemoveComponent( s );
+			for( int i = 0; i < rem.Count; i++ )
+				RemoveComponent( rem[ i ] );
 
 			return true;
 		}
@@ -819,8 +841,8 @@ namespace MiCore
 			result.OnRemove();
 			m_components.RemoveAt( index );
 
-			foreach( string s in rem )
-				RemoveComponent( s );
+			for( int i = 0; i < rem.Count; i++ )
+				RemoveComponent( rem[ i ] );
 
 			result.Parent = null;
 			return result;
@@ -859,11 +881,11 @@ namespace MiCore
 		/// </summary>
 		public void ClearComponents()
 		{
-			foreach( MiComponent c in m_components )
+			for( int i = 0; i < m_components.Count; i++ )
 			{
-				c?.UnsubscribeEvents();
-				c?.OnRemove();
-				c?.Dispose();
+				m_components[ i ]?.UnsubscribeEvents();
+				m_components[ i ]?.OnRemove();
+				m_components[ i ]?.Dispose();
 			}
 
 			m_components.Clear();
@@ -879,10 +901,13 @@ namespace MiCore
 				m_components[ i ].Parent = this;
 				m_components[ i ].Refresh();
 			}
-			foreach( MiEntity e in this )
+
+			MiEntity[] children = Children;
+
+			for( int i = 0; i < children.Length; i++ )
 			{
-				e.Window = Window;
-				e.Refresh();
+				children[ i ].Window = Window;
+				children[ i ].Refresh();
 			}
 		}
 
@@ -914,12 +939,16 @@ namespace MiCore
 			if( Window == null )
 				return false;
 
-			foreach( MiComponent c in m_components )
-				c?.SubscribeEvents();
+			for( int i = 0; i < ComponentCount; i++ )
+				m_components[ i ]?.SubscribeEvents();
 
 			if( rec )
-				foreach( MiEntity e in this )
-					e?.SubscribeEvents( rec );
+			{
+				MiEntity[] children = Children;
+
+				for( int i = 0; i < children.Length; i++ )
+					children[ i ]?.SubscribeEvents( rec );
+			}
 
 			return true;
 		}
@@ -937,12 +966,16 @@ namespace MiCore
 			if( Window == null )
 				return false;
 
-			foreach( MiComponent c in m_components )
-				c?.UnsubscribeEvents();
+			for( int i = 0; i < ComponentCount; i++ )
+				m_components[ i ]?.UnsubscribeEvents();
 
 			if( rec )
-				foreach( MiEntity e in this )
-					e?.UnsubscribeEvents( rec );
+			{
+				MiEntity[] children = Children;
+
+				for( int i = 0; i < children.Length; i++ )
+					children[ i ]?.UnsubscribeEvents( rec );
+			}
 
 			return true;
 		}
@@ -960,10 +993,13 @@ namespace MiCore
 				m_components[ i ].Parent = this;
 				m_components[ i ]?.Update( dt );
 			}
-			foreach( MiEntity e in this )
+
+			MiEntity[] children = Children;
+
+			for( int i = 0; i < children.Length; i++ )
 			{
-				e.Window = Window;
-				e.Update( dt );
+				children[ i ].Window = Window;
+				children[ i ].Update( dt );
 			}
 		}
 		/// <summary>
@@ -983,8 +1019,10 @@ namespace MiCore
 				m_components[ i ]?.Draw( target, states );
 			}
 
-			foreach( MiEntity e in this )
-				e.Draw( target, states );
+			MiEntity[] children = Children;
+
+			for( int i = 0; i < children.Length; i++ )
+				children[ i ].Draw( target, states );
 		}
 		/// <summary>
 		///   Disposes of the object and children.
@@ -1096,12 +1134,12 @@ namespace MiCore
 
 			XmlNodeList comps = element.ChildNodes;
 
-			foreach( XmlNode node in comps )
+			for( int i = 0; i < comps.Count; i++ )
 			{
-				if( node.NodeType != XmlNodeType.Element )
+				if( comps[ i ].NodeType != XmlNodeType.Element )
 					continue;
 
-				XmlElement e = (XmlElement)node;
+				XmlElement e = (XmlElement)comps[ i ];
 
 				if( !ComponentRegister.Manager.Registered( e.Name ) )
 					continue;
@@ -1158,8 +1196,10 @@ namespace MiCore
 				sb.Append( nameof( Children ) );
 				sb.AppendLine( ">" );
 
-				foreach( MiEntity e in Children )
-					sb.AppendLine( XmlLoadable.ToString( e, 2 ) );
+				MiEntity[] children = Children;
+
+				for( int i = 0; i < children.Length; i++ )
+					sb.AppendLine( XmlLoadable.ToString( children[ i ], 2 ) );
 
 				sb.Append( "\t</" );
 				sb.Append( nameof( Children ) );

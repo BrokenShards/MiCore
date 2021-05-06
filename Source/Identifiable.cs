@@ -56,8 +56,8 @@ namespace MiCore
 			if( string.IsNullOrWhiteSpace( id ) || ( !char.IsLetter( id[ 0 ] ) && id[ 0 ] != '_' ) )
 				return false;
 
-			foreach( char c in id )
-				if( !char.IsLetterOrDigit( c ) && c != '_' )
+			for( int i = 0; i < id.Length; i++ )
+				if( !char.IsLetterOrDigit( id[ i ] ) && id[ i ] != '_' )
 					return false;
 
 			return true;
@@ -185,6 +185,6 @@ namespace MiCore
 		}
 
 		static Dictionary<string, ulong> _counter = new Dictionary<string, ulong>();
-		static Random random = new Random();
+		static readonly Random random = new Random();
 	}
 }

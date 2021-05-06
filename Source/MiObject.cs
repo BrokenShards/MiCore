@@ -25,7 +25,6 @@ using System.IO;
 using System.Xml;
 
 using SFML.Graphics;
-using SFML.Window;
 
 namespace MiCore
 {

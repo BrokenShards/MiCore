@@ -228,8 +228,8 @@ namespace MiCore
 			if( jobs == null || jobs.Count == 0 || e == null )
 				return;
 
-			foreach( MiJob j in jobs )
-				j.Run( e );
+			for( int i = 0; i < jobs.Count; i++ )
+				jobs[ i ].Run( e );
 		}
 		/// <summary>
 		///   Runs all jobs up to a given priority on the entity and its children.
@@ -250,9 +250,9 @@ namespace MiCore
 			if( joblist == null || joblist.Length == 0 || e == null )
 				return;
 
-			foreach( JobList jobs in joblist )
-				foreach( MiJob j in jobs )
-					j.Run( e );
+			for( int i = 0; i < joblist.Length; i++ )
+				for( int j = 0; j < joblist[ i ].Count; j++ )
+					joblist[ i ][ j ].Run( e );
 		}
 		/// <summary>
 		///   Runs all jobs from a given priority on the entity and its children.
@@ -273,9 +273,9 @@ namespace MiCore
 			if( joblist == null || joblist.Length == 0 || e == null )
 				return;
 
-			foreach( JobList jobs in joblist )
-				foreach( MiJob j in jobs )
-					j.Run( e );
+			for( int i = 0; i < joblist.Length; i++ )
+				for( int j = 0; j < joblist[ i ].Count; j++ )
+					joblist[ i ][ j ].Run( e );
 		}
 		/// <summary>
 		///   Runs all jobs on the entity and its children.
@@ -290,9 +290,9 @@ namespace MiCore
 			if( joblist == null || joblist.Length == 0 || e == null )
 				return;
 
-			foreach( JobList jobs in joblist )
-				foreach( MiJob j in jobs )
-					j.Run( e );
+			for( int i = 0; i < joblist.Length; i++ )
+				for( int j = 0; j < joblist[ i ].Count; j++ )
+					joblist[ i ][ j ].Run( e );
 		}
 
 		/// <summary>
@@ -313,8 +313,8 @@ namespace MiCore
 
 			List<Task> tasks = new List<Task>( jobs.Count );
 
-			foreach( MiJob j in jobs )
-				tasks.Add( j.RunASync( e ) );
+			for( int i = 0; i < jobs.Count; i++ )
+				tasks.Add( jobs[ i ].RunASync( e ) );
 
 			await Task.WhenAll( tasks ).ConfigureAwait( false );
 		}
@@ -337,12 +337,12 @@ namespace MiCore
 			if( joblist == null || joblist.Length == 0 || e == null )
 				return;
 
-			foreach( JobList jobs in joblist )
+			for( int i = 0; i < joblist.Length; i++ )
 			{
-				List<Task> tasks = new List<Task>( jobs.Count );
+				List<Task> tasks = new List<Task>( joblist[ i ].Count );
 
-				foreach( MiJob j in jobs )
-					tasks.Add( j.RunASync( e ) );
+				for( int j = 0; j < joblist[ i ].Count; j++ )
+					tasks.Add( joblist[ i ][ j ].RunASync( e ) );
 
 				await Task.WhenAll( tasks ).ConfigureAwait( false );
 			}
@@ -366,12 +366,12 @@ namespace MiCore
 			if( joblist == null || joblist.Length == 0 || e == null )
 				return;
 
-			foreach( JobList jobs in joblist )
+			for( int i = 0; i < joblist.Length; i++ )
 			{
-				List<Task> tasks = new List<Task>( jobs.Count );
+				List<Task> tasks = new List<Task>( joblist[ i ].Count );
 
-				foreach( MiJob j in jobs )
-					tasks.Add( j.RunASync( e ) );
+				for( int j = 0; j < joblist[ i ].Count; j++ )
+					tasks.Add( joblist[ i ][ j ].RunASync( e ) );
 
 				await Task.WhenAll( tasks ).ConfigureAwait( false );
 			}
@@ -389,12 +389,12 @@ namespace MiCore
 			if( joblist == null || joblist.Length == 0 || e == null )
 				return;
 
-			foreach( JobList jobs in joblist )
+			for( int i = 0; i < joblist.Length; i++ )
 			{
-				List<Task> tasks = new List<Task>( jobs.Count );
+				List<Task> tasks = new List<Task>( joblist[ i ].Count );
 
-				foreach( MiJob j in jobs )
-					tasks.Add( j.RunASync( e ) );
+				for( int j = 0; j < joblist[ i ].Count; j++ )
+					tasks.Add( joblist[ i ][ j ].RunASync( e ) );
 
 				await Task.WhenAll( tasks ).ConfigureAwait( false );
 			}
@@ -499,8 +499,8 @@ namespace MiCore
 				if( ( inclusive && v.Key >= priority ) || ( !inclusive && v.Key > priority ) )
 					ps.Add( v.Key );
 
-			foreach( uint i in ps )
-				Remove( i );
+			for( int i = 0; i < ps.Count; i++ )
+				Remove( ps[ i ] );
 		}
 		/// <summary>
 		///   Removes and unregisters the given jobs from the given priority.
@@ -513,10 +513,12 @@ namespace MiCore
 		/// </param>
 		public void Remove( uint priority, params JobDelegate[] jobs )
 		{
-			if( HasJob( priority ) )
-				foreach( JobDelegate j in jobs )
-					foreach( MiJob mj in m_jobs[ priority ] )
-						mj.Job -= j;
+			if( !HasJob( priority ) )
+				return;
+
+			for( int d = 0; d < jobs.Length; d++ )
+				for( int j = 0; j < m_jobs[ priority ].Count; j++ )
+					m_jobs[ priority ][ j ].Job -= jobs[ d ];
 		}
 		/// <summary>
 		///   Removes all jobs from all priorities.

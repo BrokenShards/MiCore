@@ -62,8 +62,8 @@ namespace MiCore
 
 			m_children = n.HasChildren ? new List<T>( n.ChildCount ) : new List<T>();
 
-			foreach( T e in n )
-				if( !AddChild( (T)e.Clone() ) )
+			for( int i = 0; i < n.ChildCount; i++ )
+				if( !AddChild( (T)n.m_children[ i ].Clone() ) )
 					throw new InvalidOperationException( "Failed adding cloned node as child." );
 
 			if( n.Parent != null )
@@ -146,19 +146,19 @@ namespace MiCore
 		/// </summary>
 		public T[] AllChildren
 		{
-			get			
+			get
 			{
 				if( !HasChildren )
 					return new T[ 0 ];
 
 				List<T> children = new List<T>( Children );
 
-				foreach( T child in this )
+				for( int i = 0; i < ChildCount; i++ )
 				{
-					if( !child.HasChildren )
+					if( !m_children[ i ].HasChildren )
 						continue;
 
-					List<T> c = new List<T>( child.AllChildren );
+					List<T> c = new List<T>( m_children[ i ].AllChildren );
 					children.AddRange( c );
 				}
 
@@ -197,8 +197,8 @@ namespace MiCore
 			{
 				int counter = ChildCount;
 
-				foreach( T c in m_children )
-					counter += c.ChildCount;
+				for( int i = 0; i < ChildCount; i++ )
+					counter += m_children[ i ].TotalChildCount;
 
 				return counter;
 			}
@@ -216,9 +216,13 @@ namespace MiCore
 		public bool IsParent( T parent )
 		{
 			if( parent != null && parent != this )
-				foreach( T p in Parents )
-					if( p == parent )
+			{
+				MiNode<T>[] parents = Parents;
+
+				for( int i = 0; i < parents.Length; i++ )
+					if( parents[ i ] == parent )
 						return true;
+			}
 
 			return false;
 		}
@@ -240,14 +244,14 @@ namespace MiCore
 			if( !HasChildren || e == null )
 				return false;
 
-			foreach( T e1 in m_children )
+			for( int i = 0; i < ChildCount; i++ )
 			{
-				if( e1.Equals( e ) )
+				if( m_children[ i ].Equals( e ) )
 					return true;
 
 				if( recursive )
-					foreach( T e2 in e1 )
-						if( e2.HasChild( e, true ) )
+					for( int j = 0; j < m_children[ i ].ChildCount; j++ )
+						if( m_children[ i ].m_children[ j ].HasChild( e, true ) )
 							return true;
 			}
 
@@ -285,14 +289,14 @@ namespace MiCore
 			if( !Identifiable.IsValid( id ) )
 				return false;
 
-			foreach( T e1 in m_children )
+			for( int i = 0; i < ChildCount; i++ )
 			{
-				if( e1.ID.Equals( id ) )
+				if( m_children[ i ].ID.Equals( id ) )
 					return true;
 
 				if( recursive )
-					foreach( T e2 in e1 )
-						if( e2.HasChild( id, true ) )
+					for( int j = 0; j < m_children[ i ].ChildCount; j++ )
+						if( m_children[ i ].m_children[ j ].HasChild( id, true ) )
 							return true;
 			}
 
@@ -347,16 +351,16 @@ namespace MiCore
 			if( !Identifiable.IsValid( id ) )
 				return null;
 
-			foreach( T e1 in m_children )
+			for( int i = 0; i < ChildCount; i++ )
 			{
-				if( e1.ID.Equals( id ) )
-					return e1;
+				if( m_children[ i ].ID.Equals( id ) )
+					return m_children[ i ];
 
 				if( recursive )
 				{
-					foreach( T e2 in e1 )
+					for( int j = 0; j < m_children[ i ].ChildCount; j++ )
 					{
-						T c = e2.GetChild( id, true );
+						T c = m_children[ i ].m_children[ j ].GetChild( id, true );
 
 						if( c != null )
 							return c;
@@ -839,8 +843,8 @@ namespace MiCore
 				sb.Append( nameof( Children ) );
 				sb.AppendLine( ">" );
 
-				foreach( T t in m_children )
-					sb.AppendLine( XmlLoadable.ToString( t, 2 ) );
+				for( int i = 0; i < ChildCount; i++ )
+					sb.AppendLine( XmlLoadable.ToString( m_children[ i ], 2 ) );
 
 				sb.Append( "\t</" );
 				sb.Append( nameof( Children ) );

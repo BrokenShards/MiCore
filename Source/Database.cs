@@ -254,10 +254,7 @@ namespace MiCore
 			if( sd == null )
 				throw new ArgumentNullException();
 
-			m_db = new Dictionary<string, T>();
-
-			if( sd == null )
-				return;
+			m_db = new Dictionary<string, T>( sd.m_db.Count );
 
 			foreach( var v in m_db )
 				Add( v.Key, v.Value );
@@ -551,10 +548,10 @@ namespace MiCore
 		/// </summary>
 		public override void Clear()
 		{
-			var keys = m_db.Keys.ToArray();
+			foreach( var v in m_db )
+				v.Value?.Dispose();
 
-			foreach( string n in keys )
-				Remove( n );
+			m_db.Clear();
 		}
 
 		/// <summary>
@@ -780,10 +777,10 @@ namespace MiCore
 		/// </summary>
 		public override void Clear()
 		{
-			var keys = m_db.Keys.ToArray();
+			foreach( var v in m_db )
+				v.Value?.Dispose();
 
-			foreach( string n in keys )
-				Remove( n );
+			m_db.Clear();
 		}
 
 		/// <summary>
@@ -993,10 +990,10 @@ namespace MiCore
 		/// </summary>
 		public override void Clear()
 		{
-			var keys = m_db.Keys.ToArray();
+			foreach( var v in m_db )
+				v.Value?.Dispose();
 
-			foreach( string n in keys )
-				Remove( n );
+			m_db.Clear();
 		}
 		/// <summary>
 		///   Performs application-defined tasks associated with freeing, 

@@ -21,7 +21,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using SFML.Window;
 
 namespace MiCore
 {
@@ -137,8 +136,8 @@ namespace MiCore
 		public bool Requires( string typename )
 		{
 			if( typename != null && RequiredComponents != null )
-				foreach( string s in RequiredComponents )
-					if( s.Equals( typename ) )
+				for( int i = 0; i < RequiredComponents.Length; i++ )
+					if( RequiredComponents[ i ].Equals( typename ) )
 						return true;
 
 			return false;
@@ -192,8 +191,8 @@ namespace MiCore
 		public bool Incompatible( string typename )
 		{
 			if( typename != null && IncompatibleComponents != null )
-				foreach( string s in IncompatibleComponents )
-					if( s.Equals( typename ) )
+				for( int i = 0; i < IncompatibleComponents.Length; i++ )
+					if( IncompatibleComponents[ i ].Equals( typename ) )
 						return true;
 
 			return false;

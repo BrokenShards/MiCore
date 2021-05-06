@@ -190,7 +190,7 @@ namespace MiCore
 			if( job == null )
 				return Remove( index );
 			if( Contains( job ) )
-				return IndexOf( job ) == index ? true : false;
+				return IndexOf( job ) == index;
 
 			m_jobs[ index ] = job;
 			return true;
@@ -239,12 +239,12 @@ namespace MiCore
 			if( jobs == null )
 				return false;
 
-			foreach( MiJob job in jobs )
+			for( int i = 0; i < jobs.Length; i++ )
 			{
-				if( job == null )
+				if( jobs[ i ] == null )
 					return false;
-				if( !Contains( job ) )
-					m_jobs.Add( job );
+				if( !Contains( jobs[ i ] ) )
+					m_jobs.Add( jobs[ i ] );
 			}
 
 			return true;
@@ -281,8 +281,8 @@ namespace MiCore
 			int count = 0;
 
 			if( jobs != null )
-				foreach( MiJob job in jobs )
-					if( Remove( IndexOf( job ) ) )
+				for( int i = 0; i < jobs.Length; i++ )
+					if( Remove( IndexOf( jobs[ i ] ) ) )
 						count++;
 
 			return count;
@@ -306,8 +306,8 @@ namespace MiCore
 			if( e == null )
 				return;
 
-			foreach( MiJob j in this )
-				j.Run( e );
+			for( int i = 0; i < Count; i++ )
+				m_jobs[ i ].Run( e );
 		}
 		/// <summary>
 		///   Runs all jobs asyncronously in the list on the entity.
@@ -320,8 +320,8 @@ namespace MiCore
 			if( e == null )
 				return;
 
-			foreach( MiJob j in this )
-				await j.RunASync( e ).ConfigureAwait( false );
+			for( int i = 0; i < Count; i++ )
+				await m_jobs[ i ].RunASync( e ).ConfigureAwait( false );
 		}
 
 		/// <summary>
@@ -360,6 +360,6 @@ namespace MiCore
 			return ( (IEnumerable)m_jobs ).GetEnumerator();
 		}
 
-		List<MiJob> m_jobs;
+		readonly List<MiJob> m_jobs;
 	}
 }

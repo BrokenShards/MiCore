@@ -258,7 +258,7 @@ namespace MiCore
 			return true;
 		}
 
-		private Dictionary<Type, IBinarySerializable> m_dbs;
+		private readonly Dictionary<Type, IBinarySerializable> m_dbs;
 
 		/// <summary>
 		///   The singleton instance.
