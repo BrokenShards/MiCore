@@ -73,7 +73,7 @@ namespace MiCore
 		{
 			string id;
 
-			using( T t = new T() )
+			using( T t = new() )
 				id = t.TypeName;
 
 			return Register<T>( id, replace );

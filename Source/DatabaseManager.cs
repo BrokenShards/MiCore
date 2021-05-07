@@ -63,7 +63,7 @@ namespace MiCore
 		/// </returns>
 		public bool Contains( Type t )
 		{
-			if( t == null )
+			if( t is null )
 				return false;
 
 			return m_dbs.ContainsKey( t );
@@ -141,7 +141,7 @@ namespace MiCore
 			}
 			else
 			{
-				T db = new T();
+				T db = new();
 
 				if( !db.LoadFromFile() )
 					return false;
@@ -267,11 +267,11 @@ namespace MiCore
 		{
 			get
 			{
-				if( _instance == null )
+				if( _instance is null )
 				{
 					lock( _syncRoot )
 					{
-						if( _instance == null )
+						if( _instance is null )
 						{
 							_instance = new DatabaseManager();
 						}
@@ -283,6 +283,6 @@ namespace MiCore
 		}
 
 		private static volatile DatabaseManager _instance;
-		private static readonly object _syncRoot = new object();
+		private static readonly object _syncRoot = new();
 	}
 }

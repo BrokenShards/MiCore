@@ -128,19 +128,18 @@ namespace MiCore
 		/// </param>
 		public void ChangeWindow( RenderWindow window )
 		{
-			if( Window != null )
+			if( Window is not null )
 				for( int i = 0; i < ComponentCount; i++ )
 					m_components[ i ]?.UnsubscribeEvents();
 
 			Window = window;
 
-			if( Window != null )
+			if( Window is not null )
 				for( int i = 0; i < ComponentCount; i++ )
 					m_components[ i ]?.SubscribeEvents();
 
 			if( !HasChildren )
 				return;
-
 
 			MiEntity[] children = Children;
 
@@ -170,7 +169,7 @@ namespace MiCore
 		/// </summary>
 		public string[] GetIncompatibleComponents()
 		{
-			List<string> list = new List<string>();
+			List<string> list = new();
 
 			bool ContainsString( string s )
 			{
@@ -203,8 +202,8 @@ namespace MiCore
 		/// </returns>
 		public bool IsCompatible<T>() where T : MiComponent, new()
 		{
-			using( T t = new T() )
-				return IsCompatible( t );
+			using T t = new();
+			return IsCompatible( t );
 		}
 		/// <summary>
 		///   Checks if a given component type name is compatible with the current components.
@@ -217,7 +216,7 @@ namespace MiCore
 		/// </returns>
 		public bool IsCompatible( string typename )
 		{
-			if( typename == null || !ComponentRegister.Manager.Registered( typename ) )
+			if( typename is null || !ComponentRegister.Manager.Registered( typename ) )
 				return false;
 
 			string[] incomp = GetIncompatibleComponents();
@@ -241,7 +240,7 @@ namespace MiCore
 		/// </returns>
 		public bool IsCompatible( MiComponent comp )
 		{
-			if( comp == null || !IsCompatible( comp.TypeName ) )
+			if( comp is null || !IsCompatible( comp.TypeName ) )
 				return false;
 
 			for( int i = 0; i < comp.RequiredComponents.Length; i++ )
@@ -264,7 +263,7 @@ namespace MiCore
 		{
 			string typename;
 
-			using( T t = new T() )
+			using( T t = new() )
 				typename = new string( t.TypeName.ToCharArray() );
 
 			return HasComponent( typename );
@@ -309,7 +308,7 @@ namespace MiCore
 		{
 			string typename;
 
-			using( T t = new T() )
+			using( T t = new() )
 				typename = t.TypeName;
 
 			return ComponentIndex( typename );
@@ -394,7 +393,7 @@ namespace MiCore
 		/// </returns>
 		public MiEntity[] GetChildrenWithComponent<T>() where T : MiComponent, new()
 		{
-			List<MiEntity> ents = new List<MiEntity>();
+			List<MiEntity> ents = new();
 			MiEntity[] children = Children;
 
 			for( int i = 0; i < children.Length; i++ )
@@ -414,7 +413,7 @@ namespace MiCore
 		/// </returns>
 		public MiEntity[] GetChildrenWithComponent( string typename )
 		{
-			List<MiEntity> ents = new List<MiEntity>();
+			List<MiEntity> ents = new();
 			MiEntity[] children = Children;
 
 			for( int i = 0; i < children.Length; i++ )
@@ -435,7 +434,7 @@ namespace MiCore
 		/// </returns>
 		public MiEntity[] GetAllChildrenWithComponent<T>() where T : MiComponent, new()
 		{
-			List<MiEntity> ents = new List<MiEntity>();
+			List<MiEntity> ents = new();
 
 			ents.AddRange( GetChildrenWithComponent<T>() );
 
@@ -457,7 +456,7 @@ namespace MiCore
 		/// </returns>
 		public MiEntity[] GetAllChildrenWithComponent( string typename )
 		{
-			List<MiEntity> ents = new List<MiEntity>();
+			List<MiEntity> ents = new();
 
 			ents.AddRange( GetChildrenWithComponent( typename ) );
 
@@ -480,7 +479,7 @@ namespace MiCore
 		/// </returns>
 		public MiEntity[] GetChildrenWithAny( params string[] types )
 		{
-			List<MiEntity> ents = new List<MiEntity>();
+			List<MiEntity> ents = new();
 
 			MiEntity[] children = Children;
 			
@@ -509,7 +508,7 @@ namespace MiCore
 		/// </returns>
 		public MiEntity[] GetChildrenWithAll( params string[] types )
 		{
-			List<MiEntity> ents = new List<MiEntity>();
+			List<MiEntity> ents = new();
 
 			MiEntity[] children = Children;
 
@@ -544,7 +543,7 @@ namespace MiCore
 		/// </returns>
 		public MiEntity[] GetAllChildrenWithAny( params string[] types )
 		{
-			List<MiEntity> ents = new List<MiEntity>();
+			List<MiEntity> ents = new();
 
 			ents.AddRange( GetChildrenWithAny( types ) );
 
@@ -566,7 +565,7 @@ namespace MiCore
 		/// </returns>
 		public MiEntity[] GetAllChildrenWithAll( params string[] types )
 		{
-			List<MiEntity> ents = new List<MiEntity>();
+			List<MiEntity> ents = new();
 
 			ents.AddRange( GetChildrenWithAll( types ) );
 
@@ -647,11 +646,11 @@ namespace MiCore
 				RemoveComponent( comp.TypeName );
 			}
 
-			List<string> added = new List<string>();
+			List<string> added = new();
 
 			comp.Parent = this;
 
-			if( Window != null )
+			if( Window is not null )
 				comp.SubscribeEvents();
 
 			m_components.Add( comp );
@@ -773,7 +772,7 @@ namespace MiCore
 			if( index < 0 || index >= ComponentCount )
 				return false;
 
-			List<string> rem = new List<string>();
+			List<string> rem = new();
 
 			for( int i = 0; i < ComponentCount; i++ )
 				if( i != index && m_components[ i ].Requires( m_components[ index ].TypeName ) )
@@ -830,7 +829,7 @@ namespace MiCore
 			if( index < 0 || index >= ComponentCount )
 				return null;
 
-			List<string> rem = new List<string>();
+			List<string> rem = new();
 
 			for( int i = 0; i < ComponentCount; i++ )
 				if( i != index && m_components[ i ].Requires( m_components[ index ].TypeName ) )
@@ -868,7 +867,7 @@ namespace MiCore
 		/// </returns>
 		public MiComponent[] ReleaseAllComponents()
 		{
-			List<MiComponent> list = new List<MiComponent>();
+			List<MiComponent> list = new();
 
 			while( ComponentCount > 0 )
 				list.Add( ReleaseComponent( 0 ) );
@@ -936,7 +935,7 @@ namespace MiCore
 		/// </returns>
 		public bool SubscribeEvents( bool rec = true )
 		{
-			if( Window == null )
+			if( Window is null )
 				return false;
 
 			for( int i = 0; i < ComponentCount; i++ )
@@ -963,7 +962,7 @@ namespace MiCore
 		/// </returns>
 		public bool UnsubscribeEvents( bool rec = true )
 		{
-			if( Window == null )
+			if( Window is null )
 				return false;
 
 			for( int i = 0; i < ComponentCount; i++ )
@@ -1058,27 +1057,27 @@ namespace MiCore
 					string type = sr.ReadString();
 
 					if( !ComponentRegister.Manager.Registered( type ) )
-						return Logger.LogReturn( "Failed loading MiEntity: Saved object contains unregistered component name" + type + ".", false, LogType.Error );
+						return Logger.LogReturn( $"Failed loading MiEntity: Saved object contains unregistered component name { type }.", false, LogType.Error );
 
 					if( HasComponent( type ) )
 					{
 						if( !GetComponent( type ).LoadFromStream( sr ) )
-							return Logger.LogReturn( "Failed loading MiEntity: Unable to load component " + type + " from stream.", false, LogType.Error );
+							return Logger.LogReturn( $"Failed loading MiEntity: Unable to load component { type } from stream.", false, LogType.Error );
 					}
 					else
 					{
 						MiComponent c = ComponentRegister.Manager.Create( type );
 
 						if( !c.LoadFromStream( sr ) )
-							return Logger.LogReturn( "Failed loading MiEntity: Unable to load component " + type + " from stream.", false, LogType.Error );
+							return Logger.LogReturn( $"Failed loading MiEntity: Unable to load component { type } from stream.", false, LogType.Error );
 						if( !AddComponent( c ) )
-							return Logger.LogReturn( "Failed loading MiEntity: Unable to add component " + type + " loaded from stream.", false, LogType.Error );
+							return Logger.LogReturn( $"Failed loading MiEntity: Unable to add component { type } loaded from stream.", false, LogType.Error );
 					}
 				}
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Failed loading MiEntity from stream: " + e.Message, false, LogType.Error );
+				return Logger.LogReturn( $"Failed loading MiEntity from stream: { e.Message }", false, LogType.Error );
 			}
 
 			return true;
@@ -1106,12 +1105,12 @@ namespace MiCore
 					sw.Write( m_components[ i ].TypeName );
 
 					if( !m_components[ i ].SaveToStream( sw ) )
-						return Logger.LogReturn( "Failed saving MiEntity: Unable to save component " + m_components[ i ].TypeName + " to stream.", false, LogType.Error );
+						return Logger.LogReturn( $"Failed saving MiEntity: Unable to save component { m_components[ i ].TypeName } to stream.", false, LogType.Error );
 				}
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Unable to save MiEntity to stream: " + e.Message, false, LogType.Error );
+				return Logger.LogReturn( $"Unable to save MiEntity to stream: { e.Message }", false, LogType.Error );
 			}
 
 			return true;
@@ -1146,12 +1145,12 @@ namespace MiCore
 
 				MiComponent c = ComponentRegister.Manager.Create( e.Name );
 
-				if( c == null )
-					return Logger.LogReturn( "Unable to load MiEntity: Failed creating component " + e.Name + ".", false, LogType.Error );
+				if( c is null )
+					return Logger.LogReturn( $"Unable to load MiEntity: Failed creating component { e.Name }.", false, LogType.Error );
 				if( !c.LoadFromXml( e ) )
-					return Logger.LogReturn( "Unable to load MiEntity: Failed parsing component " + e.Name + ".", false, LogType.Error );
+					return Logger.LogReturn( $"Unable to load MiEntity: Failed parsing component { e.Name }.", false, LogType.Error );
 				if( !AddComponent( c ) )
-					return Logger.LogReturn( "Unable to load MiEntity: Failed adding component " + e.Name + ".", false, LogType.Error );
+					return Logger.LogReturn( $"Unable to load MiEntity: Failed adding component { e.Name }.", false, LogType.Error );
 			}
 
 			return true;
@@ -1164,51 +1163,32 @@ namespace MiCore
 		/// </returns>
 		public override string ToString()
 		{
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new();
 
-			sb.Append( "<" );
-			sb.Append( nameof( MiEntity ) );
-
-			sb.Append( " " );
-			sb.Append( nameof( ID ) );
-			sb.Append( "=\"" );
-			sb.Append( ID );
-			sb.AppendLine( "\"" );
-
-			sb.Append( "        " );
-			sb.Append( nameof( Enabled ) );
-			sb.Append( "=\"" );
-			sb.Append( Enabled );
-			sb.AppendLine( "\"" );
-
-			sb.Append( "        " );
-			sb.Append( nameof( Visible ) );
-			sb.Append( "=\"" );
-			sb.Append( Visible );			
-			sb.AppendLine( "\">" );
+			sb.Append( '<' ).Append( nameof( MiEntity ) )
+				.Append( ' ' )
+				.Append( nameof( ID ) ).Append( "=\"" ).Append( ID ).AppendLine( "\"" )
+				.Append( "        " )
+				.Append( nameof( Enabled ) ).Append( "=\"" ).Append( Enabled ).AppendLine( "\"" )
+				.Append( "        " )
+				.Append( nameof( Visible ) ).Append( "=\"" ).Append( Visible ).AppendLine( "\">" );
 
 			for( int i = 0; i < ComponentCount; i++ )
 				sb.AppendLine( XmlLoadable.ToString( m_components[ i ], 1 ) );
 
 			if( HasChildren )
 			{
-				sb.Append( "\t<" );
-				sb.Append( nameof( Children ) );
-				sb.AppendLine( ">" );
+				sb.Append( "\t<" ).Append( nameof( Children ) ).AppendLine( ">" );
 
 				MiEntity[] children = Children;
 
 				for( int i = 0; i < children.Length; i++ )
 					sb.AppendLine( XmlLoadable.ToString( children[ i ], 2 ) );
 
-				sb.Append( "\t</" );
-				sb.Append( nameof( Children ) );
-				sb.AppendLine( ">" );
+				sb.Append( "\t</" ).Append( nameof( Children ) ).AppendLine( ">" );
 			}
 
-			sb.Append( "</" );
-			sb.Append( nameof( MiEntity ) );
-			sb.Append( ">" );
+			sb.Append( "</" ).Append( nameof( MiEntity ) ).Append( '>' );
 
 			return sb.ToString();
 		}
@@ -1222,7 +1202,7 @@ namespace MiCore
 		/// <returns>
 		///   True if the given object is concidered equal to this object, otherwise false.
 		/// </returns>
-		public new bool Equals( MiEntity other )
+		public bool Equals( MiEntity other )
 		{
 			if( !base.Equals( other ) || ComponentCount != other.ComponentCount )
 				return false;
@@ -1233,6 +1213,31 @@ namespace MiCore
 
 			return true;
 		}
+		/// <summary>
+		///   Checks if this object is equal to another.
+		/// </summary>
+		/// <param name="obj">
+		///   The object to check against.
+		/// </param>
+		/// <returns>
+		///   True if the given object is concidered equal to this object, otherwise false.
+		/// </returns>
+		public override bool Equals( object obj )
+		{
+			return Equals( obj as MiEntity );
+		}
+
+		/// <summary>
+		///   Serves as the default hash function,
+		/// </summary>
+		/// <returns>
+		///   A hash code for the current object.
+		/// </returns>
+		public override int GetHashCode()
+		{
+			return HashCode.Combine( base.GetHashCode(), m_window, m_components );
+		}
+
 		/// <summary>
 		///   Returns a copy of this object.
 		/// </summary>

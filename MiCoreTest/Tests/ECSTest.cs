@@ -86,7 +86,7 @@ namespace MiCore.Test
 				}
 				catch( Exception e )
 				{
-					Console.WriteLine( "Unable to load SizeComponent from stream: " + e.Message );
+					Console.WriteLine( $"Unable to load SizeComponent from stream: { e.Message }" );
 					return false;
 				}
 
@@ -107,7 +107,7 @@ namespace MiCore.Test
 				}
 				catch( Exception e )
 				{
-					Console.WriteLine( "Unable to save SizeComponent to stream: " + e.Message );
+					Console.WriteLine( $"Unable to save SizeComponent to stream: { e.Message }" );
 					return false;
 				}
 
@@ -157,33 +157,16 @@ namespace MiCore.Test
 			// is used to save the component to xml.
 			public override string ToString()
 			{
-				StringBuilder sb = new StringBuilder();
+				StringBuilder sb = new();
 
-				sb.Append( '<' );
-				sb.Append( TypeName );
-				sb.Append( " " );
-				sb.Append( nameof( Enabled ) );
-				sb.Append( "=\"" );
-				sb.Append( Enabled );
-				sb.AppendLine( "\"" );
-
-				sb.Append( "                " );
-				sb.Append( nameof( Visible ) );
-				sb.Append( "=\"" );
-				sb.Append( Visible );
-				sb.AppendLine( "\"" );
-
-				sb.Append( "                " );
-				sb.Append( nameof( Width ) );
-				sb.Append( "=\"" );
-				sb.Append( Width );
-				sb.AppendLine( "\"" );
-
-				sb.Append( "                " );
-				sb.Append( nameof( Height ) );
-				sb.Append( "=\"" );
-				sb.Append( Height );
-				sb.Append( "\"/>" );
+				sb.Append( '<' ).Append( TypeName ).Append( ' ' )
+					.Append( nameof( Enabled ) ).Append( "=\"" ).Append( Enabled ).AppendLine( "\"" )
+					.Append( "                " )
+					.Append( nameof( Visible ) ).Append( "=\"" ).Append( Visible ).AppendLine( "\"" )
+					.Append( "                " )
+					.Append( nameof( Width ) ).Append( "=\"" ).Append( Width ).AppendLine( "\"" )
+					.Append( "                " )
+					.Append( nameof( Height ) ).Append( "=\"" ).Append( Height ).Append( "\"/>" );
 
 				return sb.ToString();
 			}
@@ -279,7 +262,7 @@ namespace MiCore.Test
 				}
 				catch( Exception e )
 				{
-					Console.WriteLine( "Unable to load ScaleComponent from stream: " + e.Message );
+					Console.WriteLine( $"Unable to load ScaleComponent from stream: { e.Message }" );
 					return false;
 				}
 
@@ -296,7 +279,7 @@ namespace MiCore.Test
 				}
 				catch( Exception e )
 				{
-					Console.WriteLine( "Unable to save ScaleComponent to stream: " + e.Message );
+					Console.WriteLine( $"Unable to save ScaleComponent to stream: { e.Message }" );
 					return false;
 				}
 
@@ -326,27 +309,14 @@ namespace MiCore.Test
 
 			public override string ToString()
 			{
-				StringBuilder sb = new StringBuilder();
+				StringBuilder sb = new();
 
-				sb.Append( '<' );
-				sb.Append( nameof( ScaleComponent ) );
-				sb.Append( " " );
-				sb.Append( nameof( Enabled ) );
-				sb.Append( "=\"" );
-				sb.Append( Enabled );
-				sb.AppendLine( "\"" );
-
-				sb.Append( "                " );
-				sb.Append( nameof( Visible ) );
-				sb.Append( "=\"" );
-				sb.Append( Visible );
-				sb.AppendLine( "\"" );
-
-				sb.Append( "                " );
-				sb.Append( nameof( Scale ) );
-				sb.Append( "=\"" );
-				sb.Append( Scale );
-				sb.Append( "\"/>" );
+				sb.Append( '<' ).Append( nameof( ScaleComponent ) ).Append( ' ' )
+					.Append( nameof( Enabled ) ).Append( "=\"" ).Append( Enabled ).AppendLine( "\"" )
+					.Append( "                " )
+					.Append( nameof( Visible ) ).Append( "=\"" ).Append( Visible ).AppendLine( "\"" )
+					.Append( "                " )
+					.Append( nameof( Scale ) ).Append( "=\"" ).Append( Scale ).Append( "\"/>" );
 
 				return sb.ToString();
 			}
@@ -371,8 +341,8 @@ namespace MiCore.Test
 					!ComponentRegister.Manager.Register<ScaleComponent>() )
 					return Logger.LogReturn( "Failed: Unable to register components.", false, LogType.Error );
 
-				SizeComponent  size = new SizeComponent( 100, 100 );
-				ScaleComponent scale = new ScaleComponent( 2.5f );
+				SizeComponent  size  = new( 100, 100 );
+				ScaleComponent scale = new( 2.5f );
 
 				// Ensuring newly created components are enabled.
 				if( !size.Enabled || !scale.Enabled )
@@ -382,13 +352,13 @@ namespace MiCore.Test
 					return Logger.LogReturn( "Failed: Newly constructed component is in invisible state.", false, LogType.Error );
 
 				// Ensuring constructor set width properly.
-				if( size.Width != 100 )
+				if( size.Width is not 100 )
 					return Logger.LogReturn( "Failed: SizeComponent Width was not set correctly.", false, LogType.Error );
 				// Ensuring constructor set height properly.
-				if( size.Height != 100 )
+				if( size.Height is not 100 )
 					return Logger.LogReturn( "Failed: SizeComponent Height was not set correctly.", false, LogType.Error );
 				// Ensuring constructor set scale properly.
-				if( scale.Scale != 2.5f )
+				if( scale.Scale is not 2.5f )
 					return Logger.LogReturn( "Failed: ScaleComponent Scale was not set correctly.", false, LogType.Error );
 
 				scale.Dispose();
@@ -428,7 +398,7 @@ namespace MiCore.Test
 					!ComponentRegister.Manager.Register<ScaleComponent>() )
 					return Logger.LogReturn( "Failed: Unable to register components.", false, LogType.Error );
 
-				using( MiEntity ent = new MiEntity() )
+				using( MiEntity ent = new() )
 				{
 					if( !ent.Enabled )
 						return Logger.LogReturn( "Failed: New MiEntity is in disabled state.", false, LogType.Error );
@@ -499,7 +469,7 @@ namespace MiCore.Test
 			{
 				Logger.Log( "Running MiNode tests..." );
 
-				using( TestNode node = new TestNode( "root" ) )
+				using( TestNode node = new( "root" ) )
 				{
 					int count = 25;
 
@@ -517,227 +487,6 @@ namespace MiCore.Test
 			}
 		}
 
-		class JobTest : TestModule
-		{
-			static int runcount = 0;
-			static readonly object _lock = new object();
-
-			// Test function for the job to run.
-			static void TestDelegate( MiEntity e )
-			{
-				lock( _lock )
-					runcount++;
-			}
-
-			protected override bool OnTest()
-			{
-				Logger.Log( "Running Job tests..." );
-
-				runcount = 0;
-
-				// Create a new job by assigning it a delegate.
-				MiJob job = new MiJob( TestDelegate );
-				MiEntity ent = new MiEntity( "Tester" );
-
-				for( int i = 0; i < 500; i++ )
-					if( !ent.AddChild( new MiEntity( "L" + i.ToString() ) ) )
-						return Logger.LogReturn( "Failed! Unable to add child.", false, LogType.Error );
-
-				// Run the job on the entity.
-				job.Run( ent );
-
-				int totalruns = ent.ChildCount + 1;
-
-				// Ensuring job ran successfully.
-				if( runcount != totalruns )
-					return Logger.LogReturn( "Failed! Job missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
-
-				runcount = 0;
-
-				// Run the job asyncronously on the entity. We call `Wait` here to wait for the task
-				// to finish so it can be called syncronously.
-				job.RunASync( ent ).Wait();
-
-				// Ensuring job ran successfully.
-				if( runcount != totalruns )
-					return Logger.LogReturn( "Failed! ASync job missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
-
-				return Logger.LogReturn( "Success!", true );
-			}
-		}
-		class JobListTest : TestModule
-		{
-			static int runcount = 0;
-			static readonly object _lock = new object();
-
-			// Test functions for the job list to run.
-			static void TestDelegate1( MiEntity e )
-			{
-				lock( _lock )
-					runcount++;
-			}
-			static void TestDelegate2( MiEntity e )
-			{
-				lock( _lock )
-					runcount++;
-			}
-			static void TestDelegate3( MiEntity e )
-			{
-				lock( _lock )
-					runcount++;
-			}
-			static void TestDelegate4( MiEntity e )
-			{
-				lock( _lock )
-					runcount++;
-			}
-			static void TestDelegate5( MiEntity e )
-			{
-				lock( _lock )
-					runcount++;
-			}
-
-			protected override bool OnTest()
-			{
-				Logger.Log( "Running JobList tests..." );
-
-				runcount = 0;
-
-				// Create a new job list by assigning it jobs.
-				JobList list = new JobList
-				{
-					new MiJob( TestDelegate1 ),
-					new MiJob( TestDelegate2 ),
-					new MiJob( TestDelegate3 )
-				};
-
-				// Try adding more jobs to the list.
-				if( !list.Add( new MiJob( TestDelegate4 ), new MiJob( TestDelegate5 ) ) )
-					return Logger.LogReturn( "Failed! Unable to add jobs to list.", false, LogType.Error );
-
-				MiEntity ent = new MiEntity( "Tester" );
-
-				for( int i = 0; i < 200; i++ )
-					if( !ent.AddChild( new MiEntity( "L" + i.ToString() ) ) )
-						return Logger.LogReturn( "Failed! Unable to add child.", false, LogType.Error );
-
-				// Run the job list on the entity.
-				list.Run( ent );
-
-				int totalruns = ( ent.ChildCount + 1 ) * list.Count;
-
-				// Ensuring job ran successfully.
-				if( runcount != totalruns )
-					return Logger.LogReturn( "Failed! JobList missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
-
-				runcount = 0;
-
-				// Run the job list asyncronously on the entity. We call `Wait` here to wait for the
-				// task to finish so it can be called syncronously.
-				list.RunASync( ent ).Wait();
-
-				// Ensuring job ran successfully.
-				if( runcount != totalruns )
-					return Logger.LogReturn( "Failed! ASync JobList missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
-
-				return Logger.LogReturn( "Success!", true );
-			}
-		}
-		class JobManagerTest : TestModule
-		{
-			static int runcount = 0;
-			static readonly object _lock = new object();
-
-			// Test functions for the job list to run.
-			static void TestDelegate1( MiEntity e )
-			{
-				lock( _lock )
-					runcount++;
-			}
-			static void TestDelegate2( MiEntity e )
-			{
-				lock( _lock )
-					runcount++;
-			}
-			static void TestDelegate3( MiEntity e )
-			{
-				lock( _lock )
-					runcount++;
-			}
-			static void TestDelegate4( MiEntity e )
-			{
-				lock( _lock )
-					runcount++;
-			}
-			static void TestDelegate5( MiEntity e )
-			{
-				lock( _lock )
-					runcount++;
-			}
-
-			protected override bool OnTest()
-			{
-				Logger.Log( "Running JobManager tests..." );
-
-				runcount = 0;
-
-				// Create a new job manager.
-				JobManager man = new JobManager();
-
-				// Try adding job lists to the manager with given priorities.
-				if( !man.Add( 10, new JobList( new MiJob( TestDelegate1 ) ) ) ||
-					!man.Add( 20, new JobList( new MiJob( TestDelegate2 ) ) ) ||
-					!man.Add( 30, new JobList( new MiJob( TestDelegate3 ) ) ) ||
-					!man.Add( 40, new JobList( new MiJob( TestDelegate4 ) ) ) ||
-					!man.Add( 50, new JobList( new MiJob( TestDelegate5 ) ) ) )
-					return Logger.LogReturn( "Failed! Unable to add job lists to manager.", false, LogType.Error );
-
-				// Ensuring the right amount of job lists were added.
-				if( man.Count != 5 )
-					return Logger.LogReturn( "Failed! Job manager reporting wrong job count.", false, LogType.Error );
-
-				// Ensuring the jobs were added at the right priority.
-				if( !man.HasJob( 10 ) || !man.HasJob( 20 ) || !man.HasJob( 30 ) ||
-					!man.HasJob( 40 ) || !man.HasJob( 50 ) )
-					return Logger.LogReturn( "Failed! Job manager reporting no jobs for assigned priorities.", false, LogType.Error );
-
-				// Remove a job list mapped to a given priority.
-				if( !man.Remove( 40 ) )
-					return Logger.LogReturn( "Failed! Job manager reporting unable to remove assigned priorty.", false, LogType.Error );
-
-				// Ensuring the job list was actually removed.
-				if( man.Count != 4 )
-					return Logger.LogReturn( "Failed! Job manager reporting wrong job count.", false, LogType.Error );
-
-				MiEntity ent = new MiEntity( "Tester" );
-
-				for( int i = 0; i < 200; i++ )
-					if( !ent.AddChild( new MiEntity( "L" + i.ToString() ) ) )
-						return Logger.LogReturn( "Failed! Unable to add child.", false, LogType.Error );
-
-				// Run all jobs in the manager in priority order on the entity.
-				man.RunAll( ent );
-
-				int totalruns = ( ent.ChildCount + 1 ) * man.Count;
-
-				// Ensuring job ran successfully.
-				if( runcount != totalruns )
-					return Logger.LogReturn( "Failed! JobManager missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
-
-				runcount = 0;
-
-				// Run all jobs in the manager in priority order asyncronously on the entity. We 
-				// call `Wait` here to wait for the task to finish so it can be called syncronously.
-				man.RunAllASync( ent ).Wait();
-
-				// Ensuring job ran successfully.
-				if( runcount != totalruns )
-					return Logger.LogReturn( "Failed! ASync JobManager missed " + ( totalruns - runcount ).ToString() + " runs.", false, LogType.Error );
-
-				return Logger.LogReturn( "Success!", true );
-			}
-		}
-
 		public static bool Run()
 		{
 			bool result = true;
@@ -750,12 +499,12 @@ namespace MiCore.Test
 				result = false;
 			if( !Testing.Test<MiNodeTest>() )
 				result = false;
-			if( !Testing.Test<JobTest>() )
-				result = false;
-			if( !Testing.Test<JobListTest>() )
-				result = false;
-			if( !Testing.Test<JobManagerTest>() )
-				result = false;
+			//if( !Testing.Test<JobTest>() )
+			//	result = false;
+			//if( !Testing.Test<JobListTest>() )
+			//	result = false;
+			//if( !Testing.Test<JobManagerTest>() )
+			//	result = false;
 
 			return result;
 		}

@@ -81,11 +81,11 @@ namespace MiCore
 		/// </exception>
 		public MiObject( MiObject obj )
 		{
-			if( obj == null )
-				throw new ArgumentNullException();
+			if( obj is null )
+				throw new ArgumentNullException( nameof( obj ) );
 
-			Enabled = obj.Enabled;
-			Visible = obj.Visible;
+			Enabled  = obj.Enabled;
+			Visible  = obj.Visible;
 			Disposed = obj.Disposed;
 		}
 
@@ -161,7 +161,7 @@ namespace MiCore
 		/// </returns>  
 		public override bool LoadFromStream( BinaryReader sr )
 		{
-			if( sr == null )
+			if( sr is null )
 				return Logger.LogReturn( "Unable to load object from null stream.", false, LogType.Error );
 
 			try
@@ -172,7 +172,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Unable to load object from stream: " + e.Message, false, LogType.Error );
+				return Logger.LogReturn( $"Unable to load object from stream: { e.Message }", false, LogType.Error );
 			}
 
 			return true;
@@ -188,7 +188,7 @@ namespace MiCore
 		/// </returns>
 		public override bool SaveToStream( BinaryWriter sw )
 		{
-			if( sw == null )
+			if( sw is null )
 				return Logger.LogReturn( "Unable to save object to null stream.", false, LogType.Error );
 
 			try
@@ -198,7 +198,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Unable to save object to stream: " + e.Message, false, LogType.Error );
+				return Logger.LogReturn( $"Unable to save object to stream: { e.Message }", false, LogType.Error );
 			}
 
 			return true;
@@ -214,7 +214,7 @@ namespace MiCore
 		/// </returns>
 		public virtual bool LoadFromXml( XmlElement element )
 		{
-			if( element == null )
+			if( element is null )
 				return Logger.LogReturn( "Unable to load object from null xml element.", false, LogType.Error );
 
 			Enabled  = true;
@@ -248,6 +248,7 @@ namespace MiCore
 			{
 				OnDispose();
 				Disposed = true;
+				GC.SuppressFinalize( this );
 			}
 		}
 
@@ -276,10 +277,33 @@ namespace MiCore
 		/// </returns>
 		public bool Equals( MiObject other )
 		{
-			return other    != null &&
+			return other is not null &&
 			       Enabled  == other.Enabled &&
 				   Visible  == other.Visible &&
 				   Disposed == other.Disposed;
+		}
+		/// <summary>
+		///   Checks if this object is equal to another.
+		/// </summary>
+		/// <param name="obj">
+		///   The object to check against.
+		/// </param>
+		/// <returns>
+		///   True if the given object is concidered equal to this object, otherwise false.
+		/// </returns>
+		public override bool Equals( object obj )
+		{
+			return Equals( obj as MiObject );
+		}
+		/// <summary>
+		///   Serves as the default hash function,
+		/// </summary>
+		/// <returns>
+		///   A hash code for the current object.
+		/// </returns>
+		public override int GetHashCode()
+		{
+			return HashCode.Combine( Enabled, Visible, Disposed );
 		}
 	}
 }

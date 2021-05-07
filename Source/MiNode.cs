@@ -32,7 +32,7 @@ namespace MiCore
 	/// <summary>
 	///   Base class for tree-based node objects.
 	/// </summary>
-	public abstract class MiNode<T> : MiObject, IIdentifiable<string>, IEnumerable<T>, IEquatable<T>
+	public abstract class MiNode<T> : MiObject, IIdentifiable<string>, IEnumerable<T>, IEquatable<MiNode<T>>
 		where T : MiNode<T>, new()
 	{
 		/// <summary>
@@ -57,7 +57,7 @@ namespace MiCore
 		public MiNode( MiNode<T> n )
 		:	base( n )
 		{
-			ID     = new string( n.ID.ToCharArray() ) + "_copy";
+			ID     = $"{ n.ID }_copy";
 			Parent = n.Parent;
 
 			m_children = n.HasChildren ? new List<T>( n.ChildCount ) : new List<T>();
@@ -108,12 +108,16 @@ namespace MiCore
 			private set
 			{
 				if( value == this )
-					throw new ArgumentException();
+					throw new ArgumentException( "Cannot set node as its own Parent!", nameof( value ) );
 
-				if( HasChildren && value != null )
-					foreach( T c in AllChildren )
-						if( c == value )
-							throw new ArgumentException();
+				if( HasChildren && value is not null )
+				{
+					MiNode<T>[] children = AllChildren;
+
+					for( int i = 0; i < children.Length; i++ )
+						if( children[ i ] == value )
+							throw new ArgumentException( "Cannot set a child node as Parent!", nameof( value ) );
+				}
 
 				m_parent = value;
 			}
@@ -125,9 +129,9 @@ namespace MiCore
 		{
 			get
 			{
-				List<T> parents = new List<T>();
+				List<T> parents = new();
 
-				for( T t = Parent; t != null; t = t.Parent )
+				for( T t = Parent; t is not null; t = t.Parent )
 					parents.Add( t );
 
 				return parents.ToArray();
@@ -149,16 +153,16 @@ namespace MiCore
 			get
 			{
 				if( !HasChildren )
-					return new T[ 0 ];
+					return Array.Empty<T>();
 
-				List<T> children = new List<T>( Children );
+				List<T> children = new( Children );
 
 				for( int i = 0; i < ChildCount; i++ )
 				{
 					if( !m_children[ i ].HasChildren )
 						continue;
 
-					List<T> c = new List<T>( m_children[ i ].AllChildren );
+					List<T> c = new( m_children[ i ].AllChildren );
 					children.AddRange( c );
 				}
 
@@ -171,7 +175,7 @@ namespace MiCore
 		/// </summary>
 		public bool HasParent
 		{
-			get { return Parent != null; }
+			get { return Parent is not null; }
 		}
 
 		/// <summary>
@@ -215,7 +219,7 @@ namespace MiCore
 		/// </returns>
 		public bool IsParent( T parent )
 		{
-			if( parent != null && parent != this )
+			if( parent is not null && parent != this )
 			{
 				MiNode<T>[] parents = Parents;
 
@@ -241,7 +245,7 @@ namespace MiCore
 		/// </returns>
 		public bool HasChild( T e, bool recursive = false )
 		{
-			if( !HasChildren || e == null )
+			if( !HasChildren || e is null )
 				return false;
 
 			for( int i = 0; i < ChildCount; i++ )
@@ -274,16 +278,16 @@ namespace MiCore
 			if( string.IsNullOrEmpty( id ) || !HasChildren )
 				return false;
 
-			if( id.Contains( "/" ) )
+			if( id.Contains( '/' ) )
 			{
-				int slash = id.IndexOf( "/" );
+				int slash = id.IndexOf( '/' );
 
 				string i = id.Substring( 0, slash );
 
 				if( !HasChild( i ) )
 					return false;
 
-				return GetChild( i ).HasChild( id.Substring( slash + 1 ), recursive );
+				return GetChild( i ).HasChild( id[ ( slash + 1 ).. ], recursive );
 			}
 
 			if( !Identifiable.IsValid( id ) )
@@ -336,16 +340,16 @@ namespace MiCore
 			if( string.IsNullOrEmpty( id ) || !HasChildren )
 				return null;
 
-			if( id.Contains( "/" ) )
+			if( id.Contains( '/' ) )
 			{
-				int slash = id.IndexOf( "/" );
+				int slash = id.IndexOf( '/' );
 
 				string i = id.Substring( 0, slash );
 
 				if( !HasChild( i ) )
 					return null;
 
-				return GetChild( i ).GetChild( id.Substring( slash + 1 ), recursive );
+				return GetChild( i ).GetChild( id[ ( slash + 1 ).. ], recursive );
 			}
 
 			if( !Identifiable.IsValid( id ) )
@@ -362,7 +366,7 @@ namespace MiCore
 					{
 						T c = m_children[ i ].m_children[ j ].GetChild( id, true );
 
-						if( c != null )
+						if( c is not null )
 							return c;
 					}
 				}
@@ -386,7 +390,7 @@ namespace MiCore
 		/// </returns>
 		public bool AddChild( T e, bool replace = false )
 		{
-			if( e == null || e == this || IsParent( e ) )
+			if( e is null || e == this || IsParent( e ) )
 				return false;
 			if( HasChild( e ) )
 				return AddChild( ReleaseChild( e ) );
@@ -399,7 +403,7 @@ namespace MiCore
 				RemoveChild( e.ID );
 			}
 
-			if( e.Parent != null )
+			if( e.Parent is not null )
 				e.Parent.ReleaseChild( e.ID );
 
 			e.Parent = (T)this;
@@ -418,7 +422,7 @@ namespace MiCore
 		/// </returns>
 		public bool AddChildren( params T[] nodes )
 		{
-			if( nodes == null )
+			if( nodes is null )
 				return false;
 
 			foreach( T n in nodes )
@@ -442,7 +446,7 @@ namespace MiCore
 		/// </returns>
 		public bool RemoveChild( T e, bool recursive = false )
 		{
-			if( !HasChildren || e == null )
+			if( !HasChildren || e is null )
 				return false;
 
 			for( int i = 0; i < ChildCount; i++ )
@@ -494,16 +498,16 @@ namespace MiCore
 			if( string.IsNullOrEmpty( id ) || !HasChildren )
 				return false;
 
-			if( id.Contains( "/" ) )
+			if( id.Contains( '/' ) )
 			{
-				int slash = id.IndexOf( "/" );
+				int slash = id.IndexOf( '/' );
 
 				string i = id.Substring( 0, slash );
 
 				if( !HasChild( i ) )
 					return false;
 
-				return GetChild( i ).RemoveChild( id.Substring( slash + 1 ), recursive );
+				return GetChild( i ).RemoveChild( id[ ( slash + 1 ).. ], recursive );
 			}
 
 			if( !Identifiable.IsValid( id ) )
@@ -530,8 +534,8 @@ namespace MiCore
 		/// </summary>
 		public void RemoveAllChildren()
 		{
-			foreach( T c in m_children )
-				c.Dispose();
+			for( int i = 0; i < ChildCount; i++ )
+				m_children[ i ].Dispose();
 
 			m_children.Clear();
 		}
@@ -550,7 +554,7 @@ namespace MiCore
 		/// </returns>
 		public T ReleaseChild( T ent, bool recursive = false )
 		{
-			if( !HasChildren || ent == null )
+			if( !HasChildren || ent is null )
 				return null;
 
 			for( int i = 0; i < ChildCount; i++ )
@@ -564,7 +568,7 @@ namespace MiCore
 					{
 						T e = m_children[ i ].ReleaseChild( ent, true );
 
-						if( e != null )
+						if( e is not null )
 							return e;
 					}
 				}
@@ -608,16 +612,16 @@ namespace MiCore
 			if( string.IsNullOrEmpty( id ) || !HasChildren )
 				return null;
 
-			if( id.Contains( "/" ) )
+			if( id.Contains( '/' ) )
 			{
-				int slash = id.IndexOf( "/" );
+				int slash = id.IndexOf( '/' );
 
 				string i = id.Substring( 0, slash );
 
 				if( !HasChild( i ) )
 					return null;
 
-				return GetChild( i ).ReleaseChild( id.Substring( slash + 1 ), recursive );
+				return GetChild( i ).ReleaseChild( id[ ( slash + 1 ).. ], recursive );
 			}
 
 			if( !Identifiable.IsValid( id ) )
@@ -637,7 +641,7 @@ namespace MiCore
 				{
 					T e = m_children[ i ].ReleaseChild( id, true );
 
-					if( e != null )
+					if( e is not null )
 						return e;
 				}
 			}
@@ -675,7 +679,7 @@ namespace MiCore
 		/// </returns>
 		public int ChildIndex( T e )
 		{
-			if( e != null )
+			if( e is not null )
 				for( int i = 0; i < ChildCount; i++ )
 					if( m_children[ i ].Equals( e ) )
 						return i;
@@ -724,7 +728,7 @@ namespace MiCore
 
 				for( int i = 0; i < count; i++ )
 				{
-					T n = new T();
+					T n = new();
 
 					if( !n.LoadFromStream( sr ) )
 						return Logger.LogReturn( "Failed loading node: Unable to load child from stream.", false, LogType.Error );
@@ -734,7 +738,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Failed loading node from stream: " + e.Message, false, LogType.Error );
+				return Logger.LogReturn( $"Failed loading node from stream: { e.Message }", false, LogType.Error );
 			}
 
 			return true;
@@ -764,7 +768,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Unable to save node to stream: " + e.Message, false, LogType.Error );
+				return Logger.LogReturn( $"Unable to save node to stream: { e.Message }", false, LogType.Error );
 			}
 
 			return true;
@@ -797,7 +801,7 @@ namespace MiCore
 						continue;
 
 					XmlElement xe = (XmlElement)node;
-					T e = new T();
+					T e = new();
 
 					if( !e.LoadFromXml( xe ) )
 						return Logger.LogReturn( "Failed loading node: Unable to load child from xml.", false, LogType.Error );
@@ -816,39 +820,23 @@ namespace MiCore
 		/// </returns>
 		public override string ToString()
 		{
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new();
 
-			sb.Append( "<MiNode " );
-
-			sb.Append( nameof( ID ) );
-			sb.Append( "=\"" );
-			sb.Append( ID );
-			sb.AppendLine( "\"" );
-
-			sb.Append( "        " );
-			sb.Append( nameof( Enabled ) );
-			sb.Append( "=\"" );
-			sb.Append( Enabled );
-			sb.AppendLine( "\"" );
-
-			sb.Append( "        " );
-			sb.Append( nameof( Visible ) );
-			sb.Append( "=\"" );
-			sb.Append( Visible );
-			sb.AppendLine( "\">" );
+			sb.Append( "<MiNode " ).
+				Append( nameof( ID ) ).Append( "=\"" ).Append( ID ).AppendLine( "\"" )
+				.Append( "        " )
+				.Append( nameof( Enabled ) ).Append( "=\"" ).Append( Enabled ).AppendLine( "\"" )
+				.Append( "        " )
+				.Append( nameof( Visible ) ).Append( "=\"" ).Append( Visible ).AppendLine( "\">" );
 
 			if( HasChildren )
 			{
-				sb.Append( "\t<" );
-				sb.Append( nameof( Children ) );
-				sb.AppendLine( ">" );
+				sb.Append( "\t<" ).Append( nameof( Children ) ).AppendLine( ">" );
 
 				for( int i = 0; i < ChildCount; i++ )
 					sb.AppendLine( XmlLoadable.ToString( m_children[ i ], 2 ) );
 
-				sb.Append( "\t</" );
-				sb.Append( nameof( Children ) );
-				sb.AppendLine( ">" );
+				sb.Append( "\t</" ).Append( nameof( Children ) ).AppendLine( ">" );
 			}
 
 			sb.Append( "</MiNode>" );
@@ -864,7 +852,7 @@ namespace MiCore
 		/// <returns>
 		///   True if the given object is concidered equal to this object, otherwise false.
 		/// </returns>
-		public virtual bool Equals( T other )
+		public virtual bool Equals( MiNode<T> other )
 		{
 			if( !base.Equals( other ) || Parent != other.Parent || ChildCount != other.ChildCount )
 				return false;
@@ -874,6 +862,29 @@ namespace MiCore
 					return false;
 
 			return true;
+		}
+		/// <summary>
+		///   Checks if this object is equal to another.
+		/// </summary>
+		/// <param name="obj">
+		///   The object to check against.
+		/// </param>
+		/// <returns>
+		///   True if the given object is concidered equal to this object, otherwise false.
+		/// </returns>
+		public override bool Equals( object obj )
+		{
+			return Equals( obj as MiNode<T> );
+		}
+		/// <summary>
+		///   Serves as the default hash function,
+		/// </summary>
+		/// <returns>
+		///   A hash code for the current object.
+		/// </returns>
+		public override int GetHashCode()
+		{
+			return HashCode.Combine( base.GetHashCode(), m_id, m_parent, m_children );
 		}
 
 		/// <summary>

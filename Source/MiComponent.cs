@@ -135,7 +135,7 @@ namespace MiCore
 		/// </returns>
 		public bool Requires( string typename )
 		{
-			if( typename != null && RequiredComponents != null )
+			if( typename is not null && RequiredComponents is not null )
 				for( int i = 0; i < RequiredComponents.Length; i++ )
 					if( RequiredComponents[ i ].Equals( typename ) )
 						return true;
@@ -153,7 +153,7 @@ namespace MiCore
 		/// </returns>
 		public bool Requires( Type type )
 		{
-			if( type == null || RequiredComponents == null )
+			if( type is null || RequiredComponents is null )
 				return false;
 
 			string name = null;
@@ -175,8 +175,8 @@ namespace MiCore
 		/// </returns>
 		public bool Requires<T>() where T : MiComponent, new()
 		{
-			using( T t = new T() )
-				return Requires( t.TypeName );
+			using T t = new();
+			return Requires( t.TypeName );
 		}
 
 		/// <summary>
@@ -190,7 +190,7 @@ namespace MiCore
 		/// </returns>
 		public bool Incompatible( string typename )
 		{
-			if( typename != null && IncompatibleComponents != null )
+			if( typename is not null && IncompatibleComponents is not null )
 				for( int i = 0; i < IncompatibleComponents.Length; i++ )
 					if( IncompatibleComponents[ i ].Equals( typename ) )
 						return true;
@@ -208,7 +208,7 @@ namespace MiCore
 		/// </returns>
 		public bool Incompatible( Type type )
 		{
-			if( type == null || IncompatibleComponents == null )
+			if( type is null || IncompatibleComponents is null )
 				return false;
 
 			string name = null;
@@ -230,8 +230,8 @@ namespace MiCore
 		/// </returns>
 		public bool Incompatible<T>() where T : MiComponent, new()
 		{
-			using( T t = new T() )
-				return Incompatible( t.TypeName );
+			using T t = new();
+			return Incompatible( t.TypeName );
 		}
 
 		/// <summary>
@@ -245,10 +245,23 @@ namespace MiCore
 		/// </returns>
 		public bool Equals( MiComponent other )
 		{
-			if( other == null || TypeName != other.TypeName )
+			if( other is null || TypeName != other.TypeName )
 				return false;
 
 			return true;
+		}
+		/// <summary>
+		///   Checks if the object is considered equal to this object.
+		/// </summary>
+		/// <param name="obj">
+		///   The object to compare to.
+		/// </param>
+		/// <returns>
+		///   True if the object is considered equal to this object, otherwise false.
+		/// </returns>
+		public override bool Equals( object obj )
+		{
+			return Equals( obj as MiComponent );
 		}
 
 		/// <summary>
@@ -260,7 +273,7 @@ namespace MiCore
 		/// </returns>
 		protected virtual string[] GetRequiredComponents()
 		{
-			return new string[ 0 ];
+			return Array.Empty<string>();
 		}
 		/// <summary>
 		///   Gets the type names of components incompatible with this component type. Used to
@@ -271,7 +284,18 @@ namespace MiCore
 		/// </returns>
 		protected virtual string[] GetIncompatibleComponents()
 		{
-			return new string[ 0 ];
+			return Array.Empty<string>();
+		}
+
+		/// <summary>
+		///   Serves as the default hash function,
+		/// </summary>
+		/// <returns>
+		///   A hash code for the current object.
+		/// </returns>
+		public override int GetHashCode()
+		{
+			return HashCode.Combine( base.GetHashCode(), Parent, RequiredComponents, IncompatibleComponents );
 		}
 	}
 }

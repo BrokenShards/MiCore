@@ -53,17 +53,17 @@ namespace MiCore.Test
 			return result;
 		}
 
-		bool Vec2fTest()
+		private static bool Vec2fTest()
 		{
 			Logger.Log( "Running Vector2f Test..." );
 
-			Vector2f vec = new Vector2f( 13, 25 );
-			XmlDocument doc = new XmlDocument();
+			Vector2f vec = new( 13, 25 );
+			XmlDocument doc = new();
 
 			try
 			{
 				// Load xml document from `Xml.ToString`.
-				doc.LoadXml( Xml.Header + "\r\n" + Xml.ToString( vec ) );
+				doc.LoadXml( $"{ Xml.Header }\r\n{ Xml.ToString( vec ) }" );
 
 				// Try parsing the document element back to a vector and check for equality.
 				if( !vec.Equals( Xml.ToVec2f( doc.DocumentElement ) ) )
@@ -72,22 +72,22 @@ namespace MiCore.Test
 			catch( Exception e )
 			{
 				// If we get here, `doc.LoadXml` or `Xml.ToVec2f` failed.
-				return Logger.LogReturn( "Failed! " + e.Message, false );
+				return Logger.LogReturn( $"Failed! { e.Message }", false );
 			}
 
 			return Logger.LogReturn( "Success!", true );
 		}
-		bool Vec2iTest()
+		private static bool Vec2iTest()
 		{
 			Logger.Log( "Running Vector2i Test..." );
 
-			Vector2i vec = new Vector2i( 13, 25 );
-			XmlDocument doc = new XmlDocument();
+			Vector2i vec = new( 13, 25 );
+			XmlDocument doc = new();
 
 			try
 			{
 				// Load xml document from `Xml.ToString`.
-				doc.LoadXml( Xml.Header + "\r\n" + Xml.ToString( vec ) );
+				doc.LoadXml( $"{ Xml.Header }\r\n{ Xml.ToString( vec ) }" );
 
 				// Try parsing the document element back to a vector and check for equality.
 				if( !vec.Equals( Xml.ToVec2i( doc.DocumentElement ) ) )
@@ -96,22 +96,22 @@ namespace MiCore.Test
 			catch( Exception e )
 			{
 				// If we get here, `doc.LoadXml` or `Xml.ToVec2i` failed.
-				return Logger.LogReturn( "Failed! " + e.Message, false );
+				return Logger.LogReturn( $"Failed! { e.Message }", false );
 			}
 
 			return Logger.LogReturn( "Success!", true );
 		}
-		bool Vec2uTest()
+		private static bool Vec2uTest()
 		{
 			Logger.Log( "Running Vector2u Test..." );
 
-			Vector2u vec = new Vector2u( 13, 25 );
-			XmlDocument doc = new XmlDocument();
+			Vector2u vec = new( 13, 25 );
+			XmlDocument doc = new();
 
 			try
 			{
 				// Load xml document from `Xml.ToString`.
-				doc.LoadXml( Xml.Header + "\r\n" + Xml.ToString( vec ) );
+				doc.LoadXml( $"{ Xml.Header }\r\n{ Xml.ToString( vec ) }" );
 
 				// Try parsing the document element back to a vector and check for equality.
 				if( !vec.Equals( Xml.ToVec2u( doc.DocumentElement ) ) )
@@ -120,23 +120,23 @@ namespace MiCore.Test
 			catch( Exception e )
 			{
 				// If we get here, `doc.LoadXml` or `Xml.ToVec2u` failed.
-				return Logger.LogReturn( "Failed! " + e.Message, false );
+				return Logger.LogReturn( $"Failed! { e.Message }", false );
 			}
 
 			return Logger.LogReturn( "Success!", true );
 		}
 
-		bool IRectTest()
+		private static bool IRectTest()
 		{
 			Logger.Log( "Running IntRect Test..." );
 
-			IntRect rect = new IntRect( 13, 25, 45, 56 );
-			XmlDocument doc = new XmlDocument();
+			IntRect rect = new( 13, 25, 45, 56 );
+			XmlDocument doc = new();
 
 			try
 			{
 				// Load xml document from `Xml.ToString`.
-				doc.LoadXml( Xml.Header + "\r\n" + Xml.ToString( rect ) );
+				doc.LoadXml( $"{ Xml.Header }\r\n{ Xml.ToString( rect ) }" );
 
 				// Try parsing the document element back to a rect and check for equality.
 				if( !rect.Equals( Xml.ToIRect( doc.DocumentElement ) ) )
@@ -145,22 +145,22 @@ namespace MiCore.Test
 			catch( Exception e )
 			{
 				// If we get here, `doc.LoadXml` or `Xml.ToIRect` failed.
-				return Logger.LogReturn( "Failed! " + e.Message, false );
+				return Logger.LogReturn( $"Failed! { e.Message }", false );
 			}
 
 			return Logger.LogReturn( "Success!", true );
 		}
-		bool FRectTest()
+		private static bool FRectTest()
 		{
 			Logger.Log( "Running FloatRect Test..." );
 
-			FloatRect rect = new FloatRect( 13, 25, 45, 56 );
-			XmlDocument doc = new XmlDocument();
+			FloatRect rect = new( 13, 25, 45, 56 );
+			XmlDocument doc = new();
 
 			try
 			{
 				// Load xml document from `Xml.ToString`.
-				doc.LoadXml( Xml.Header + "\r\n" + Xml.ToString( rect ) );
+				doc.LoadXml( $"{ Xml.Header }\r\n{ Xml.ToString( rect ) }" );
 
 				// Try parsing the document element back to a rect and check for equality.
 				if( !rect.Equals( Xml.ToFRect( doc.DocumentElement ) ) )
@@ -169,23 +169,23 @@ namespace MiCore.Test
 			catch( Exception e )
 			{
 				// If we get here, `doc.LoadXml` or `Xml.ToFRect` failed.
-				return Logger.LogReturn( "Failed! " + e.Message, false );
+				return Logger.LogReturn( $"Failed! { e.Message }", false );
 			}
 
 			return Logger.LogReturn( "Success!", true );
 		}
 
-		bool ColorTest()
+		private static bool ColorTest()
 		{
 			Logger.Log( "Running Color Test..." );
 
-			Color col = new Color( 13, 25, 45, 56 );
-			XmlDocument doc = new XmlDocument();
+			Color col = new( 13, 25, 45, 56 );
+			XmlDocument doc = new();
 
 			try
 			{
 				// Load xml document from `Xml.ToString`.
-				doc.LoadXml( Xml.Header + "\r\n" + Xml.ToString( col ) );
+				doc.LoadXml( $"{ Xml.Header }\r\n{ Xml.ToString( col ) }" );
 
 				// Try parsing the document element back to a color and check for equality.
 				if( !col.Equals( Xml.ToColor( doc.DocumentElement ) ) )
@@ -194,22 +194,22 @@ namespace MiCore.Test
 			catch( Exception e )
 			{
 				// If we get here, `doc.LoadXml` or `Xml.ToColor` failed.
-				return Logger.LogReturn( "Failed! " + e.Message, false );
+				return Logger.LogReturn( $"Failed! { e.Message }", false );
 			}
 
 			return Logger.LogReturn( "Success!", true );
 		}
-		bool VideoModeTest()
+		private static bool VideoModeTest()
 		{
 			Logger.Log( "Running VideoMode Test..." );
 
-			VideoMode vm = new VideoMode( 800, 600, 32 );
-			XmlDocument doc = new XmlDocument();
+			VideoMode vm = new( 800, 600, 32 );
+			XmlDocument doc = new();
 
 			try
 			{
 				// Load xml document from `Xml.ToString`.
-				doc.LoadXml( Xml.Header + "\r\n" + Xml.ToString( vm ) );
+				doc.LoadXml( $"{ Xml.Header }\r\n{ Xml.ToString( vm ) }" );
 
 				// Try parsing the document element back to a video mode and check for equality.
 				if( !vm.Equals( Xml.ToVideoMode( doc.DocumentElement ) ) )
@@ -218,7 +218,7 @@ namespace MiCore.Test
 			catch( Exception e )
 			{
 				// If we get here, `doc.LoadXml` or `Xml.ToVideoMode` failed.
-				return Logger.LogReturn( "Failed! " + e.Message, false );
+				return Logger.LogReturn( $"Failed! { e.Message }", false );
 			}
 
 			return Logger.LogReturn( "Success!", true );

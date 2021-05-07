@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace MiCore
 {
@@ -93,17 +94,18 @@ namespace MiCore
 				return RandomStringID( 12 );
 			
 			string n = id.Trim();
-			string res = string.Empty;
+			
+			StringBuilder sb = new( n.Length );
 
 			for( int i = 0; i < n.Length; i++ )
 			{
 				if( !char.IsLetterOrDigit( n[ i ] ) && n[ i ] != '_' )
-					res += '_';
+					sb.Append( '_' );
 				else
-					res += n[ i ];
+					sb.Append( n[ i ] );
 			}
 
-			return res;
+			return sb.ToString();
 		}
 		/// <summary>
 		///   Returns the given objects' ID as a valid ID.
@@ -136,7 +138,7 @@ namespace MiCore
 			if( !_counter.ContainsKey( l ) )
 				_counter.Add( l, 0 );
 
-			string str = p + _counter[ l ].ToString();
+			string str = $"{ p }{ _counter[ l ] }";
 			_counter[ l ]++;
 			return str;
 		}
@@ -184,7 +186,7 @@ namespace MiCore
 				s => s[ random.Next( s.Length ) ] ).ToArray() );
 		}
 
-		static Dictionary<string, ulong> _counter = new Dictionary<string, ulong>();
-		static readonly Random random = new Random();
+		static readonly Dictionary<string, ulong> _counter = new();
+		static readonly Random random = new();
 	}
 }

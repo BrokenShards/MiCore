@@ -107,7 +107,7 @@ namespace MiCore
 		/// </returns>
 		public bool Registered( string typeid )
 		{
-			if( typeid == null )
+			if( typeid is null )
 				return false;
 
 			return m_typemap.ContainsKey( typeid );
@@ -126,7 +126,7 @@ namespace MiCore
 		/// </returns>
 		public bool Registered( Type type )
 		{
-			if( type == null )
+			if( type is null )
 				return false;
 
 			return m_typemap.ContainsValue( type );
@@ -184,9 +184,9 @@ namespace MiCore
 		{
 			if( !Identifiable.IsValid( typeid ) )
 				return false;
-			if( type == null && !m_allownull )
+			if( type is null && !m_allownull )
 				return false;
-			if( type != null && !type.IsSubclassOf( typeof( RT ) ) )
+			if( type is not null && !type.IsSubclassOf( typeof( RT ) ) )
 				return false;
 
 			if( Registered( typeid ) )
@@ -234,7 +234,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<T>( "Unable to create object: " + e.Message, null, LogType.Error );
+				return Logger.LogReturn<T>( $"Unable to create object: { e.Message }", null, LogType.Error );
 			}
 
 			return c;
@@ -250,7 +250,7 @@ namespace MiCore
 		/// </returns>
 		public RT Create( string typeid )
 		{
-			if( !Registered( typeid ) || Get( typeid ) == null )
+			if( !Registered( typeid ) || Get( typeid ) is null )
 				return null;
 
 			RT c;
@@ -261,7 +261,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<RT>( "Unable to create object: " + e.Message, null, LogType.Error );
+				return Logger.LogReturn<RT>( $"Unable to create object: { e.Message }", null, LogType.Error );
 			}
 
 			return c;

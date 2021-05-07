@@ -126,7 +126,7 @@ namespace MiCore
 		/// </returns>
 		public virtual bool SaveToStream( StreamWriter sw )
 		{
-			if( sw == null )
+			if( sw is null )
 				return Logger.LogReturn( "Unable to save to a null stream.", false, LogType.Error );
 
 			try
@@ -135,7 +135,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Unable to save to stream: " + e.Message + ".", false, LogType.Error );
+				return Logger.LogReturn( $"Unable to save to stream: { e.Message }.", false, LogType.Error );
 			}
 
 			return true;
@@ -163,18 +163,19 @@ namespace MiCore
 		/// </returns>
 		public static T FromFile<T>( string path ) where T : class, ITextSerializable, new()
 		{
-			T val = new T();
+			T val = new();
 
 			try
 			{
-				using( FileStream str = File.OpenRead( path ) )
-				using( StreamReader r = new StreamReader( str ) )
-					if( !val.LoadFromStream( r ) )
-						return Logger.LogReturn<T>( "Unable to load TextSerializable from stream.", null, LogType.Error );
+				using FileStream str = File.OpenRead( path );
+				using StreamReader r = new( str );
+
+				if( !val.LoadFromStream( r ) )
+					return Logger.LogReturn<T>( "Unable to load TextSerializable from stream.", null, LogType.Error );
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<T>( "Unable to load from file: " + e.Message + ".", null, LogType.Error );
+				return Logger.LogReturn<T>( $"Unable to load from file: { e.Message }.", null, LogType.Error );
 			}
 
 			return val;
@@ -197,7 +198,7 @@ namespace MiCore
 		/// </returns>
 		public static bool ToFile<T>( T t, string path, bool replace = false ) where T : class, ITextSerializable, new()
 		{
-			if( t == null )
+			if( t is null )
 				return Logger.LogReturn( "Unable to save to file: Object is null.", false, LogType.Error );
 			if( string.IsNullOrWhiteSpace( path ) )
 				return Logger.LogReturn( "Unable to save to file: Path is null, empty or contains only whitespace.", false, LogType.Error );
@@ -212,14 +213,15 @@ namespace MiCore
 					File.Delete( path );
 				}
 
-				using( FileStream str = File.OpenWrite( path ) )
-				using( StreamWriter r = new StreamWriter( str ) )
-					if( !t.SaveToStream( r ) )
-						return Logger.LogReturn( "Unable to save to file: Saving to stream failed.", false, LogType.Error );
+				using FileStream str = File.OpenWrite( path );
+				using StreamWriter r = new( str );
+
+				if( !t.SaveToStream( r ) )
+					return Logger.LogReturn( "Unable to save to file: Saving to stream failed.", false, LogType.Error );
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Unable to save to stream: " + e.Message + ".", false, LogType.Error );
+				return Logger.LogReturn( $"Unable to save to stream: { e.Message }.", false, LogType.Error );
 			}
 
 			return true;
@@ -267,14 +269,15 @@ namespace MiCore
 		/// </returns>
 		public static T FromFile<T>( string path ) where T : class, IBinarySerializable, new()
 		{
-			T val = new T();
+			T val = new();
 
 			try
 			{
-				using( FileStream str = File.OpenRead( path ) )
-				using( BinaryReader r = new BinaryReader( str ) )
-					if( !val.LoadFromStream( r ) )
-						return null;
+				using FileStream str = File.OpenRead( path );
+				using BinaryReader r = new( str );
+
+				if( !val.LoadFromStream( r ) )
+					return null;
 			}
 			catch
 			{
@@ -301,9 +304,9 @@ namespace MiCore
 		/// </returns>
 		public static bool ToFile<T>( T t, string path, bool replace = false ) where T : class, IBinarySerializable, new()
 		{
-			if( t == null )
+			if( t is null )
 				return Logger.LogReturn( "Unable to save a null object to file.", false, LogType.Error );
-			if( path == null )
+			if( path is null )
 				return Logger.LogReturn( "Unable to save object to a null file path.", false, LogType.Error );
 
 			try
@@ -316,14 +319,15 @@ namespace MiCore
 					File.Delete( path );
 				}
 
-				using( FileStream str = File.OpenWrite( path ) )
-				using( BinaryWriter r = new BinaryWriter( str ) )
-					if( !t.SaveToStream( r ) )
-						return Logger.LogReturn( "Unable to save object to file: Saving to stream failed.", false, LogType.Error );
+				using FileStream str = File.OpenWrite( path );
+				using BinaryWriter r = new( str );
+
+				if( !t.SaveToStream( r ) )
+					return Logger.LogReturn( "Unable to save object to file: Saving to stream failed.", false, LogType.Error );
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Unable to save object to file: " + e.Message + ".", false, LogType.Error );
+				return Logger.LogReturn( $"Unable to save object to file: { e.Message }.", false, LogType.Error );
 			}
 
 			return true;
@@ -392,7 +396,7 @@ namespace MiCore
 		/// </returns>
 		public bool LoadFromFile( string path, string xpath = null, XmlNamespaceManager nsm = null )
 		{
-			XmlDocument doc = new XmlDocument();
+			XmlDocument doc = new();
 
 			try
 			{
@@ -401,18 +405,18 @@ namespace MiCore
 				if( string.IsNullOrWhiteSpace( xpath ) )
 					xpath = null;
 
-				if( xpath == null && !LoadFromXml( doc.DocumentElement ) )
+				if( xpath is null && !LoadFromXml( doc.DocumentElement ) )
 					return Logger.LogReturn( "Loading XmlLoadable from root element failed.", false, LogType.Error );
-				else if( xpath != null )
+				else if( xpath is not null )
 				{
-					if( ( nsm == null && !LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath ) ) ) ||
-						( nsm != null && !LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath, nsm ) ) ) )
+					if( ( nsm is null     && !LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath ) ) ) ||
+						( nsm is not null && !LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath, nsm ) ) ) )
 						return Logger.LogReturn( "Loading XmlLoadable from xpath element failed.", false, LogType.Error );
 				}
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Loading XmlLoadable from xml element failed: " + e.Message + ".", false, LogType.Error );
+				return Logger.LogReturn( $"Loading XmlLoadable from xml element failed: { e.Message }.", false, LogType.Error );
 			}
 
 			return true;
@@ -453,7 +457,7 @@ namespace MiCore
 		/// </returns>
 		public static string ToString( IXmlLoadable xl, uint indent = 0 )
 		{
-			if( xl == null )
+			if( xl is null )
 				return null;
 
 			string[] lines;
@@ -462,7 +466,7 @@ namespace MiCore
 				lines = data.Split( '\n' );
 			}
 
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new();
 
 			for( int i = 0; i < lines.Length; i++ )
 			{
@@ -489,10 +493,10 @@ namespace MiCore
 		/// </returns>
 		public static T FromElement<T>( XmlElement element ) where T : class, IXmlLoadable, new()
 		{
-			if( element == null )
+			if( element is null )
 				return Logger.LogReturn<T>( "Unable to load XmlLoadable from a null XmlElement.", null, LogType.Error );
 
-			T val = new T();
+			T val = new();
 
 			if( !val.LoadFromXml( element ) )
 				return Logger.LogReturn<T>( "Failed loading XmlLoadable from XmlElement.", null, LogType.Error );
@@ -519,9 +523,9 @@ namespace MiCore
 		/// </returns>
 		public static T FromFile<T>( string path, string xpath = null, XmlNamespaceManager nsm = null ) where T: class, IXmlLoadable, new()
 		{
-			T val = new T();
+			T val = new();
 
-			XmlDocument doc = new XmlDocument();
+			XmlDocument doc = new();
 
 			try
 			{
@@ -530,18 +534,18 @@ namespace MiCore
 				if( string.IsNullOrWhiteSpace( xpath ) )
 					xpath = null;
 
-				if( xpath == null && !val.LoadFromXml( doc.DocumentElement ) )
+				if( xpath is null && !val.LoadFromXml( doc.DocumentElement ) )
 					return Logger.LogReturn<T>( "Loading XmlLoadable from root element failed.", null, LogType.Error );
-				else if( xpath != null )
+				else if( xpath is not null )
 				{
-					if( ( nsm == null && !val.LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath ) ) ) ||
-						( nsm != null && !val.LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath, nsm ) ) ) )
+					if( ( nsm is null     && !val.LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath ) ) ) ||
+						( nsm is not null && !val.LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath, nsm ) ) ) )
 						return Logger.LogReturn<T>( "Loading XmlLoadable from xpath element failed.", null, LogType.Error );
 				}
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<T>( "Loading XmlLoadable from xml element failed: " + e.Message + ".", null, LogType.Error );
+				return Logger.LogReturn<T>( $"Loading XmlLoadable from xml element failed: { e.Message }.", null, LogType.Error );
 			}
 
 			return val;
@@ -566,9 +570,9 @@ namespace MiCore
 		/// </returns>
 		public static T FromXml<T>( string xml, string xpath = null, XmlNamespaceManager nsm = null ) where T : class, IXmlLoadable, new()
 		{
-			T val = new T();
+			T val = new();
 
-			XmlDocument doc = new XmlDocument();
+			XmlDocument doc = new();
 
 			try
 			{
@@ -577,18 +581,18 @@ namespace MiCore
 				if( string.IsNullOrWhiteSpace( xpath ) )
 					xpath = null;
 
-				if( xpath == null && !val.LoadFromXml( doc.DocumentElement ) )
+				if( xpath is null && !val.LoadFromXml( doc.DocumentElement ) )
 					return Logger.LogReturn<T>( "Loading XmlLoadable from root element failed.", null, LogType.Error );
-				else if( xpath != null )
+				else if( xpath is not null )
 				{
-					if( ( nsm == null && !val.LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath ) ) ) ||
-						( nsm != null && !val.LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath, nsm ) ) ) )
+					if( ( nsm is     null && !val.LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath ) ) ) ||
+						( nsm is not null && !val.LoadFromXml( (XmlElement)doc.SelectSingleNode( xpath, nsm ) ) ) )
 						return Logger.LogReturn<T>( "Loading XmlLoadable from xpath element failed.", null, LogType.Error );
 				}
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<T>( "Loading XmlLoadable from xml element failed: " + e.Message + ".", null, LogType.Error );
+				return Logger.LogReturn<T>( $"Loading XmlLoadable from xml element failed: { e.Message }.", null, LogType.Error );
 			}
 
 			return val;
@@ -615,19 +619,19 @@ namespace MiCore
 		/// </returns>
 		public static bool ToFile( IXmlLoadable x, string path, bool overwrite = false )
 		{
-			if( x == null )
+			if( x is null )
 				return Logger.LogReturn( "Unable to save null XmlLoadable to file.", false, LogType.Error );
 
-			if( path != null && File.Exists( path ) && !overwrite )
+			if( path is not null && File.Exists( path ) && !overwrite )
 				return false;
 
 			try
 			{
-				File.WriteAllText( path, Xml.Header + "\r\n" + x.ToString() );
+				File.WriteAllText( path, $"{ Xml.Header }\r\n{ x }" );
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn( "Unable to save XmlLoadable to file: " + e.Message + ".", false, LogType.Error );
+				return Logger.LogReturn( $"Unable to save XmlLoadable to file: { e.Message }.", false, LogType.Error );
 			}
 
 			return true;

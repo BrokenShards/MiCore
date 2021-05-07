@@ -60,11 +60,11 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( Vector2f );
 
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new();
 
-			sb.Append( "<" ).Append( name ).Append( " " )
-				.Append( nameof( Vector2f.X ) ).Append( "=\"" ).Append( vec.X ).Append( "\" " )
-				.Append( nameof( Vector2f.Y ) ).Append( "=\"" ).Append( vec.Y ).Append( "\"/>" );
+			sb.Append( '<' ).Append( name ).Append( ' ' )
+				.Append( nameof( Vector2f.X )[ 0 ] ).Append( "=\"" ).Append( vec.X ).Append( "\" " )
+				.Append( nameof( Vector2f.Y )[ 0 ] ).Append( "=\"" ).Append( vec.Y ).Append( "\"/>" );
 
 			return Indent( sb.ToString(), indent );
 		}
@@ -88,11 +88,11 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( Vector2i );
 
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new();
 
-			sb.Append( "<" ).Append( name ).Append( " " )
-				.Append( nameof( Vector2i.X ) ).Append( "=\"" ).Append( vec.X ).Append( "\" " )
-				.Append( nameof( Vector2i.Y ) ).Append( "=\"" ).Append( vec.Y ).Append( "\"/>" );
+			sb.Append( '<' ).Append( name ).Append( ' ' )
+				.Append( nameof( Vector2i.X )[ 0 ] ).Append( "=\"" ).Append( vec.X ).Append( "\" " )
+				.Append( nameof( Vector2i.Y )[ 0 ] ).Append( "=\"" ).Append( vec.Y ).Append( "\"/>" );
 
 			return Indent( sb.ToString(), indent );
 		}
@@ -116,11 +116,11 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( Vector2u );
 
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new();
 
-			sb.Append( "<" ).Append( name ).Append( " " )
-				.Append( nameof( Vector2u.X ) ).Append( "=\"" ).Append( vec.X ).Append( "\" " )
-				.Append( nameof( Vector2u.Y ) ).Append( "=\"" ).Append( vec.Y ).Append( "\"/>" );
+			sb.Append( '<' ).Append( name ).Append( ' ' )
+				.Append( nameof( Vector2u.X )[ 0 ] ).Append( "=\"" ).Append( vec.X ).Append( "\" " )
+				.Append( nameof( Vector2u.Y )[ 0 ] ).Append( "=\"" ).Append( vec.Y ).Append( "\"/>" );
 
 			return Indent( sb.ToString(), indent );
 		}
@@ -145,7 +145,7 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( FloatRect );
 
-			StringBuilder sb = new StringBuilder( name.Length + 2 );
+			StringBuilder sb = new();
 						
 			for( int i = 0; i < name.Length + 2; i++ )
 				sb.Append( ' ' );
@@ -154,7 +154,7 @@ namespace MiCore
 
 			sb.Clear();
 
-			sb.Append( "<" ).Append( name ).Append( " " )
+			sb.Append( '<' ).Append( name ).Append( ' ' )
 				.Append( nameof( FloatRect.Left ) ).Append( "=\"" ).Append( rect.Left ).Append( "\" " )
 				.Append( nameof( FloatRect.Top ) ).Append( "=\"" ).Append( rect.Top ).AppendLine( "\"" )
 				.Append( spaces )
@@ -183,7 +183,7 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( IntRect );
 
-			StringBuilder sb = new StringBuilder( name.Length + 2 );
+			StringBuilder sb = new( name.Length + 2 );
 						
 			for( int i = 0; i < name.Length + 2; i++ )
 				sb.Append( ' ' );
@@ -192,7 +192,7 @@ namespace MiCore
 
 			sb.Clear();
 
-			sb.Append( "<" ).Append( name ).Append( " " )
+			sb.Append( '<' ).Append( name ).Append( ' ' )
 				.Append( nameof( IntRect.Left ) ).Append( "=\"" ).Append( rect.Left ).Append( "\" " )
 				.Append( nameof( IntRect.Top ) ).Append( "=\"" ).Append( rect.Top ).AppendLine( "\"" )
 				.Append( spaces )
@@ -222,13 +222,13 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( Color );
 
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new();
 
-			sb.Append( "<" ).Append( name ).Append( " " )
-				.Append( nameof( Color.R ) ).Append( "=\"" ).Append( col.R ).Append( "\" " )
-				.Append( nameof( Color.G ) ).Append( "=\"" ).Append( col.G ).Append( "\" " )
-				.Append( nameof( Color.B ) ).Append( "=\"" ).Append( col.B ).Append( "\" " )
-				.Append( nameof( Color.A ) ).Append( "=\"" ).Append( col.A ).Append( "\"/>" );
+			sb.Append( '<' ).Append( name ).Append( ' ' )
+				.Append( nameof( Color.R )[ 0 ] ).Append( "=\"" ).Append( col.R ).Append( "\" " )
+				.Append( nameof( Color.G )[ 0 ] ).Append( "=\"" ).Append( col.G ).Append( "\" " )
+				.Append( nameof( Color.B )[ 0 ] ).Append( "=\"" ).Append( col.B ).Append( "\" " )
+				.Append( nameof( Color.A )[ 0 ] ).Append( "=\"" ).Append( col.A ).Append( "\"/>" );
 
 			return Indent( sb.ToString(), indent );
 		}
@@ -253,9 +253,9 @@ namespace MiCore
 			if( !Identifiable.IsValid( name ) )
 				name = nameof( VideoMode );
 
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new();
 
-			sb.Append( "<" ).Append( name ).Append( " " )
+			sb.Append( '<' ).Append( name ).Append( ' ' )
 				.Append( nameof( VideoMode.Width ) ).Append( "=\"" ).Append( vm.Width ).Append( "\" " )
 				.Append( nameof( VideoMode.Height ) ).Append( "=\"" ).Append( vm.Height ).Append( "\" " )
 				.Append( nameof( VideoMode.BitsPerPixel ) ).Append( "=\"" ).Append( vm.BitsPerPixel ).Append( "\"/>" );
@@ -274,7 +274,7 @@ namespace MiCore
 		/// </returns>
 		public static Vector2f? ToVec2f( XmlElement ele )
 		{
-			if( ele == null )
+			if( ele is null )
 				return Logger.LogReturn<Vector2f?>( "Unable to load Vector2f from null xml element.", null, LogType.Error );
 
 			if( !ele.HasAttribute( nameof( Vector2f.X ) ) )
@@ -291,7 +291,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<Vector2f?>( "Unable to load Vector2f: " + e.Message, null, LogType.Error );
+				return Logger.LogReturn<Vector2f?>( $"Unable to load Vector2f: { e.Message }", null, LogType.Error );
 			}
 
 			return vec;
@@ -307,7 +307,7 @@ namespace MiCore
 		/// </returns>
 		public static Vector2i? ToVec2i( XmlElement ele )
 		{
-			if( ele == null )
+			if( ele is null )
 				return Logger.LogReturn<Vector2i?>( "Unable to load Vector2i from null xml element.", null, LogType.Error );
 
 			if( !ele.HasAttribute( nameof( Vector2i.X ) ) )
@@ -324,7 +324,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<Vector2i?>( "Unable to load Vector2i: " + e.Message, null, LogType.Error );
+				return Logger.LogReturn<Vector2i?>( $"Unable to load Vector2i: { e.Message }", null, LogType.Error );
 			}
 
 			return vec;
@@ -340,7 +340,7 @@ namespace MiCore
 		/// </returns>
 		public static Vector2u? ToVec2u( XmlElement ele )
 		{
-			if( ele == null )
+			if( ele is null )
 				return Logger.LogReturn<Vector2u?>( "Unable to load Vector2u from null xml element.", null, LogType.Error );
 
 			if( !ele.HasAttribute( nameof( Vector2u.X ) ) )
@@ -357,7 +357,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<Vector2u?>( "Unable to load Vector2u: " + e.Message, null, LogType.Error );
+				return Logger.LogReturn<Vector2u?>( $"Unable to load Vector2u: { e.Message }", null, LogType.Error );
 			}
 
 			return vec;
@@ -374,7 +374,7 @@ namespace MiCore
 		/// </returns>
 		public static FloatRect? ToFRect( XmlElement ele )
 		{
-			if( ele == null )
+			if( ele is null )
 				return Logger.LogReturn<FloatRect?>( "Unable to load FloatRect from null xml element.", null, LogType.Error );
 
 			if( !ele.HasAttribute( nameof( FloatRect.Left ) ) )
@@ -397,7 +397,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<FloatRect?>( "Unable to load FloatRect: " + e.Message, null, LogType.Error );
+				return Logger.LogReturn<FloatRect?>( $"Unable to load FloatRect: { e.Message }", null, LogType.Error );
 			}
 
 			return rect;
@@ -413,7 +413,7 @@ namespace MiCore
 		/// </returns>
 		public static IntRect? ToIRect( XmlElement ele )
 		{
-			if( ele == null )
+			if( ele is null )
 				return Logger.LogReturn<IntRect?>( "Unable to load IntRect from null xml element.", null, LogType.Error );
 
 			if( !ele.HasAttribute( nameof( IntRect.Left ) ) )
@@ -436,7 +436,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<IntRect?>( "Unable to load IntRect: " + e.Message, null, LogType.Error );
+				return Logger.LogReturn<IntRect?>( $"Unable to load IntRect: { e.Message }", null, LogType.Error );
 			}
 
 			return rect;
@@ -453,7 +453,7 @@ namespace MiCore
 		/// </returns>
 		public static Color? ToColor( XmlElement ele )
 		{
-			if( ele == null )
+			if( ele is null )
 				return Logger.LogReturn<Color?>( "Unable to load Color from null xml element.", null, LogType.Error );
 
 			if( !ele.HasAttribute( nameof( Color.R ) ) )
@@ -476,7 +476,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<Color?>( "Unable to load Color: " + e.Message, null, LogType.Error );
+				return Logger.LogReturn<Color?>( $"Unable to load Color: { e.Message }", null, LogType.Error );
 			}
 
 			return col;
@@ -493,7 +493,7 @@ namespace MiCore
 		/// </returns>
 		public static VideoMode? ToVideoMode( XmlElement ele )
 		{
-			if( ele == null )
+			if( ele is null )
 				return Logger.LogReturn<VideoMode?>( "Unable to load VideoMode from null xml element.", null, LogType.Error );
 
 			if( !ele.HasAttribute( nameof( VideoMode.Width ) ) )
@@ -513,7 +513,7 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				return Logger.LogReturn<VideoMode?>( "Unable to load VideoMode: " + e.Message, null, LogType.Error );
+				return Logger.LogReturn<VideoMode?>( $"Unable to load VideoMode: { e.Message }", null, LogType.Error );
 			}
 
 			return vm;
@@ -534,7 +534,7 @@ namespace MiCore
 		/// </returns>
 		public static string Indent( string lines, uint indent = 1 )
 		{
-			if( lines == null )
+			if( lines is null )
 				return null;
 
 			string tabs = string.Empty;
@@ -545,7 +545,7 @@ namespace MiCore
 			if( lines.Equals( string.Empty ) )
 				return tabs;
 
-			return tabs + lines.Replace( "\r\n", "\n" ).Replace( "\n", "\n" + tabs ).Replace( "\n", "\r\n" );
+			return $"{ tabs }{ lines.Replace( "\r\n", "\n" ).Replace( "\n", $"\n{ tabs }" ).Replace( "\n", "\r\n" ) }";
 		}
 	}
 }

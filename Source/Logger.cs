@@ -112,7 +112,7 @@ namespace MiCore
 			#endif
 
 			if( l != LogType.Info )
-				msg = Enum.GetName( typeof( LogType ), l ).ToUpper() + ": " + msg;
+				msg = $"{ Enum.GetName( typeof( LogType ), l ).ToUpper() }: { msg }";
 
 			lock( _logsync )
 			{
@@ -123,22 +123,22 @@ namespace MiCore
 					if( string.IsNullOrWhiteSpace( LogPath ) )
 						LogPath = DefaultLogPath;
 
-					string datetime = DateTime.Now.ToLongDateString() + " " + DateTime.Now.ToLongTimeString() + "| ";
+					string datetime = $"{ DateTime.Now.ToLongDateString() } { DateTime.Now.ToLongTimeString() } | ";
 				
 					try
 					{
-						File.AppendAllText( LogPath, datetime + msg + '\n' );
+						File.AppendAllText( LogPath, $"{ datetime } { msg } \r\n" );
 					}
 					catch
 					{
 						try
 						{
 							LogPath = DefaultLogPath;
-							File.AppendAllText( LogPath, datetime + msg + '\n' );
+							File.AppendAllText( LogPath, $"{ datetime } { msg } \r\n" );
 						}
 						catch
 						{
-							Console.WriteLine( "Unable to log message to file: " + msg + "." );
+							Console.WriteLine( $"Unable to log message to file: { msg }." );
 						}
 					}
 				}
@@ -209,12 +209,12 @@ namespace MiCore
 			}
 			catch( Exception e )
 			{
-				Log( "Unable to delete log file: " + e.Message, LogType.Error );
+				Log( $"Unable to delete log file: { e.Message }", LogType.Error );
 			}
 
 			LogToConsole = console;
 		}
 
-		private static readonly object _logsync = new object();
+		private static readonly object _logsync = new();
 	}
 }

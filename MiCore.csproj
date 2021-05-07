@@ -1,90 +1,116 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A6B86686-F02B-4A76-9414-09384A45A22C}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>MiCore</RootNamespace>
     <AssemblyName>MiCore</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\MiCore.xml</DocumentationFile>
+    <Authors>Michael Furlong</Authors>
+    <Company />
+    <Copyright>Copyright (c) Michael Furlong 2021</Copyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <PackageProjectUrl>https://github.com/BrokenShards/MiCore</PackageProjectUrl>
+    <Description>Core library for the MiFramework.</Description>
+    <Version>1.0.0</Version>
+    <PackageId>ShardSoft.MiCore</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseFile>licence.md</PackageLicenseFile>
+    <PackageReleaseNotes># Version 1.0.0
+- The supplied project and release binaries now target .Net 5 and not the .Net Framework.
+- Updated coding style throughout to use newer C# features brought with the change to .Net 5.
+- `MiJob`, `JobList` and `JobManager` have been removed temporarily as the async functionality is not stable.
+
+# Version 0.11.0
+- Fixed issue where `Namable.AsValid(string,char)` was not using the assigned replacement character and always used an underscore.
+- Minor performance improvements by using a `for` rather than `foreach` loop in certain cases.
+
+# Version 0.10.0
+- Added generic `TypeRegister` class that is used for registering string IDs to types and using the IDs to create objects of the registered types. `ComponentRegister` inherits from this.
+- Added `SubscribeEvents(Window)` and `UnsubscribeEvents(Window)` virtual methods to `MiObject` to replace `MiComponent` and `MiEntity`'s `TextEntered(TextEventArgs)` method and expand for other events.
+- `MiComponent` now contains virtual functions `OnAdd()` and `OnRemove()` that are triggered when the component is added to and removed from an entity; these are intended to initialize the new parent entities' other components.
+- Added virtual `Refresh()` method to `MiComponent` that is called before `OnUpdate(float)` for refreshing a components' visual elements without updating runtime logic. `MiEntity.Refresh()` is also included as a passthrough. This is so components and entities can be visualized without being interacted with.
+
+# Version 0.9.1
+- Fixed bug where `MiEntity.LoadFromStream(BinaryReader)` would report failure even when it succeeded.
+
+# Version 0.9.0
+- Added functionality to `MiEntity` for retrieving children by component.
+- Fixed bug with `MiEntity.AddComponent` where if the component is added successfully, but adding one of the required components fails, the leftover components are not removed.
+- Fixed bug where `MiNode&lt;T&gt;` was not saving and loading its ID in `LoadFromStream(BinaryReader)`, `SaveToStream(BinaryWriter)` and `LoadFromXml(XmlElement)`.
+- Fixed bug where `MiNode&lt;T&gt;.ToString()` and `MiEntity.ToString()` mixed up the value for `Visible` with `Enabled`.
+- `MiNode&lt;T&gt;` is no longer `INamable` and no longer has `Name` as `IIdentifiable&lt;string&gt;` with 'ID'  does the job.
+- `MiNode.HasChild(string,bool)`, `MiNode.GetChild(string,bool)`, `MiNode.RemoveChild(string,bool)` and `MiNode.ReleaseChild(string,bool)` now all support path-like syntax to access children.
+
+# Version 0.8.0
+- When adding a component to an entity, its required components are now added after the component rather than before to prevent component order issues. Due to this, all `Entity.Insert*` methods have been removed.
+- Removed `Paths.Executable` and `Paths.ExecutableFolder` due to unforseen reflection issues.
+
+# Version 0.7.0
+- Now `MiComponent.RequiredComponents` and `MiComponent.IncompatibleComponents` are readonly and are assigned on construction with the `MiComponent.GetRequiredComponents()` and `MiComponent.GetIncompatibleComponents()` methods respectively.
+- Merged some path methods from `MiGfx`.
+
+# Version 0.6.0
+- `ComponentStack` has been merged back into `MiEntity` and the methods and properties have been renamed to show they interact with components.
+- Added `MiEntity.ReleaseAllComponents()` that removes all components from an entity without disposing of them and returns an array containing them.
+- Now `MiComponent` implements `IEquatable&lt;MiComponent&gt;` as a base for deriving classes.
+
+# Version 0.5.0
+- Changed SFML source to latest official SFML.Net repository.
+
+# Version 0.4.0
+- `MiEntity` objects now require a reference to the render window, `MiEntity.Window` to be assigned in order to contain components that need it. When setting `MiEntity.Window`, it will be applied to all child entities too.
+- `MiComponent` now contains methods for handling text entered events. `TextEntered(TextEventArgs)` is to be called and passed the event args when the event happens and will then call the virtual `OnTextEntered(TextEventArgs)` which you would override to handle the event. Because of this, `MiEntity.TextEntered(TextEventArgs)` is provided to call the event on all components and all components of all children.
+- `ComponentStack.Add&lt;T&gt;(bool)` has been renamed to `AddNew&lt;T&gt;(bool)` and has been replaced with `Add&lt;T&gt;(T, bool)` to add an object of the given type to the stack.
+- Added methods `Insert(int, MiComponent, bool)`, `Insert&lt;T&gt;(int, T, bool)`, `InsertNew&lt;T&gt;(int, bool)` and 'AddRange(IEnumerable&lt;MiComponent&gt;, bool)` to `ComponentStack` for inserting components into perticular indicies in the stack. `AddRange(IEnumerable&lt;MiComponent&gt;, bool)` has also been added to easily add a range of components from a collection.
+
+# Version 0.3.0
+- `Entity`, `Component` classes have been renamed to `MiEntity` and `MiComponent`.
+- Added `MiNode&lt;T&gt;` abstract class to provide a parent-child relationship tree of type `T` for dervied classes.
+- Added both sync and async ECS job functionality. `MiJob` objects contain job delegates and info, `JobList` objects are used to manage jobs into different priorities, and a `JobManager` object contains the job lists in priority order and is designed to run the jobs in order.
+- Component related functionality has been moved from `MiEntity` to a new class `ComponentStack`. An entities components are now accessed through `MiEntity.Components`.
+- Now `MiObject` and `MiEntity` implement `ICloneable`, this means all classes that inherit from `Component` must return a deep copy of the object via `Clone()`. This is so that entities can be cloned without knowing the actual type of their components.
+- `MiObject.Dispose()` is no longer meant to be overridden, instead override `MiObject.OnDispose()`, this ensures the object is only disposed of once.
+- `MiEntity` now inherits from and implements `MiNode&lt;MiEntity&gt;`.
+- Added `MiEntity.Release&lt;T&gt;()`, `MiEntity.Release(int)` and `MiEntity.Release(string)` methods for removing and extracting components without disposing of them.
+
+# Version 0.2.0
+- Removed the need for `DataT` type in `ISerializable` and removed `ISerializable.FileData`. Because of this, default behaviour for `TextSerializable.SaveToStream(StreamWriter)` will write the result of `ToString()` to the stream instead of `FileData` and `BinarySerializable.SaveToStream(BinaryWriter)` is now completely abstract.
+- Added `IXmlSerializable` interface and `XmlSerializable` class for classes that are serialized and deserialized in xml files node by node.
+- `MiObject.Dispose()` is now virtual rather than abstract so classes that inherit from it no longer need to implement it.
+- `Component.RequiredComponents` and `Component.IncompatibleComponents` now default to null instead of an empty string array.
+
+# Version 0.1.0
+- Initial release.</PackageReleaseNotes>
+    <PackageTags>c#</PackageTags>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\MiCore.xml</DocumentationFile>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Debug\net5.0\MiCore.xml</DocumentationFile>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\net5.0\MiCore.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="SFML.Audio, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\SFML.Audio.2.5.0\lib\netstandard2.0\SFML.Audio.dll</HintPath>
-    </Reference>
-    <Reference Include="SFML.Graphics, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\SFML.Graphics.2.5.0\lib\netstandard2.0\SFML.Graphics.dll</HintPath>
-    </Reference>
-    <Reference Include="SFML.System, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\SFML.System.2.5.0\lib\netstandard2.0\SFML.System.dll</HintPath>
-    </Reference>
-    <Reference Include="SFML.Window, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\SFML.Window.2.5.0\lib\netstandard2.0\SFML.Window.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <Compile Remove="Dev\**" />
+    <Compile Remove="MiCore-Test\**" />
+    <Compile Remove="MiCoreTest\**" />
+    <EmbeddedResource Remove="Dev\**" />
+    <EmbeddedResource Remove="MiCore-Test\**" />
+    <EmbeddedResource Remove="MiCoreTest\**" />
+    <None Remove="Dev\**" />
+    <None Remove="MiCore-Test\**" />
+    <None Remove="MiCoreTest\**" />
+    <None Include="licence.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Source\JobList.cs" />
-    <Compile Include="Source\MiComponent.cs" />
-    <Compile Include="Source\ComponentRegister.cs" />
-    <Compile Include="Source\Database.cs" />
-    <Compile Include="Source\DatabaseManager.cs" />
-    <Compile Include="Source\MiEntity.cs" />
-    <Compile Include="Source\Identifiable.cs" />
-    <Compile Include="Source\JobManager.cs" />
-    <Compile Include="Source\MiJob.cs" />
-    <Compile Include="Source\Logger.cs" />
-    <Compile Include="Source\MiObject.cs" />
-    <Compile Include="Source\Namable.cs" />
-    <Compile Include="Source\MiNode.cs" />
-    <Compile Include="Source\Paths.cs" />
-    <Compile Include="Source\Serializable.cs" />
-    <Compile Include="Source\TestModule.cs" />
-    <Compile Include="Source\TypeRegister.cs" />
-    <Compile Include="Source\Xml.cs" />
+    <PackageReference Include="SFML.Net" Version="2.5.0" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="licence.md" />
-    <None Include="packages.config" />
-    <None Include="readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include=".gitattributes" />
-    <Content Include=".gitignore" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

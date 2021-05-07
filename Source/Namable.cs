@@ -59,7 +59,7 @@ namespace MiCore
 
 			for( int i = 0; i < name.Length; i++ )
 				if( !char.IsLetterOrDigit( name[ i ] ) && !char.IsPunctuation( name[ i ] ) &&
-					!char.IsSymbol( name[ i ] ) && name[ i ] != ' ' )
+					!char.IsSymbol( name[ i ] ) && name[ i ] is not ' ' )
 					return false;
 
 			return true;
@@ -97,17 +97,17 @@ namespace MiCore
 			if( IsValid( name ) )
 				return name;
 
-			bool valid_char( char c ) => char.IsLetterOrDigit( c ) || char.IsPunctuation( c ) || char.IsSymbol( c );
+			static bool valid_char( char c ) => char.IsLetterOrDigit( c ) || char.IsPunctuation( c ) || char.IsSymbol( c );
 
 			if( !valid_char( repl ) )
 				repl = '_';
 
 			string n = name.Trim();
-			StringBuilder res = new StringBuilder( n.Length );
+			StringBuilder res = new( n.Length );
 
 			for( int i = 0; i < n.Length; i++ )
 			{
-				if( !valid_char( n[ i ] ) && n[ i ] != ' ' )
+				if( !valid_char( n[ i ] ) && n[ i ] is not ' ' )
 					res.Append( repl );
 				else
 					res.Append( n[ i ] );
@@ -163,14 +163,15 @@ namespace MiCore
 				return string.Empty;
 
 			const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-			string result = new string( Enumerable.Repeat( chars, (int)length )
+
+			string result = new( Enumerable.Repeat( chars, (int)length )
 			  .Select( s => s[ random.Next( s.Length ) ] ).ToArray() );
 
-			result = result[ 0 ] + result.Substring( 1 ).ToLower();
+			result = result[ 0 ] + result[ 1.. ].ToLower();
 			return result;
 		}
 
-		private static readonly Dictionary<string, ulong> _counter = new Dictionary<string, ulong>();
-		private static readonly Random random = new Random();
+		private static readonly Dictionary<string, ulong> _counter = new();
+		private static readonly Random random = new();
 	}
 }

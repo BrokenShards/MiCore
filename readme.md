@@ -14,6 +14,12 @@ See `MiCoreTest/Tests/` for example usage.
 
 ## Changelog
 
+### Version 1.0.0
+- The supplied project and release binaries now target .Net 5 and not the .Net Framework.
+- Updated coding style throughout to use newer C# features brought with the change to .Net 5.
+- `MiJob`, `JobList` and `JobManager` have been removed temporarily as the async functionality is
+  not stable.
+
 ### Version 0.11.0
 - Fixed issue where `Namable.AsValid(string,char)` was not using the assigned replacement character
   and always used an underscore.

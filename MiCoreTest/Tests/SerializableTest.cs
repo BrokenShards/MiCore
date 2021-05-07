@@ -47,7 +47,7 @@ namespace MiCore.Test
 			// Here we override `LoadFromStream` to load our class data from a text stream.
 			public override bool LoadFromStream( StreamReader sr )
 			{
-				if( sr == null )
+				if( sr is null )
 					return false;
 
 				try
@@ -67,7 +67,7 @@ namespace MiCore.Test
 			// the stream.
 			public override bool SaveToStream( StreamWriter sw )
 			{
-				if( sw == null )
+				if( sw is null )
 					return false;
 
 				try
@@ -120,7 +120,7 @@ namespace MiCore.Test
 			// Here we override `LoadFromStream` to load our class data from a binary stream.
 			public override bool LoadFromStream( BinaryReader sr )
 			{
-				if( sr == null )
+				if( sr is null )
 					return false;
 
 				try
@@ -138,7 +138,7 @@ namespace MiCore.Test
 			// Here we override `SaveToStream` to save our class data to a binary stream.
 			public override bool SaveToStream( BinaryWriter sw )
 			{
-				if( sw == null )
+				if( sw is null )
 					return false;
 
 				try
@@ -169,7 +169,7 @@ namespace MiCore.Test
 			{
 				Logger.Log( "Running TextSerializable Test..." );
 
-				TextSerial text1 = new TextSerial( "Tester Object" );
+				TextSerial text1 = new( "Tester Object" );
 
 				// Try saving text1 to file using its `SaveToStream` method.
 				if( !TextSerializable.ToFile( text1, TextSerialPath, true ) )
@@ -178,7 +178,7 @@ namespace MiCore.Test
 				// Try loading previously saved object from file using its `SaveToStream` method.
 				TextSerial text2 = TextSerializable.FromFile<TextSerial>( TextSerialPath );
 
-				if( text2 == null )
+				if( text2 is null )
 					return Logger.LogReturn( "Failed! Unable to deserialize from file.", false );
 
 				// Comparing saved and loaded data.
@@ -194,7 +194,7 @@ namespace MiCore.Test
 				}
 				catch
 				{
-					Logger.Log( "Failed! Unable to delete " + TextSerialPath + ".", LogType.Warning );
+					Logger.Log( $"Failed! Unable to delete { TextSerialPath }.", LogType.Warning );
 				}
 
 				return Logger.LogReturn( "TextSerializable test succeeded!", true );
@@ -209,7 +209,7 @@ namespace MiCore.Test
 			{
 				Logger.Log( "Running BinarySerializable Test..." );
 
-				BinarySerial bin1 = new BinarySerial( 10 );
+				BinarySerial bin1 = new( 10 );
 
 				// Try saving text1 to file. `ToFile<T>` is a convenience method that opens a
 				// file stream and calls `SaveToStream` on the object.
@@ -237,7 +237,7 @@ namespace MiCore.Test
 				}
 				catch
 				{
-					Logger.Log( "Failed! Unable to delete " + BinarySerialPath + ".", LogType.Warning );
+					Logger.Log( $"Failed! Unable to delete { BinarySerialPath }.", LogType.Warning );
 				}
 
 				return Logger.LogReturn( "BinarySerializable test succeeded!", true );
@@ -266,7 +266,7 @@ namespace MiCore.Test
 			{
 				Logger.Log( "Running TextDatabase Test..." );
 
-				TextDB db1 = new TextDB();
+				TextDB db1 = new();
 
 				// Adding elements to the database.
 				for( int i = 0; i < 10; i++ )
@@ -277,7 +277,7 @@ namespace MiCore.Test
 				if( !db1.SaveToFile() )
 					return Logger.LogReturn( "Failed! Unable to save DB to file.", false );
 
-				TextDB db2 = new TextDB();
+				TextDB db2 = new();
 
 				// Trying to load previously saved database from file.
 				if( !db2.LoadFromFile() )
@@ -297,7 +297,7 @@ namespace MiCore.Test
 				}
 				catch
 				{
-					Logger.Log( "Failed! Unable to delete " + db1.FilePath + ".", LogType.Warning );
+					Logger.Log( $"Failed! Unable to delete { db1.FilePath }.", LogType.Warning );
 				}
 
 				db1?.Dispose();
@@ -329,7 +329,7 @@ namespace MiCore.Test
 			{
 				Logger.Log( "Running BinaryDatabase Test..." );
 
-				BinaryDB db1 = new BinaryDB();
+				BinaryDB db1 = new();
 
 				// Adding elements to the database.
 				for( int i = 0; i < 10; i++ )
@@ -340,7 +340,7 @@ namespace MiCore.Test
 				if( !db1.SaveToFile() )
 					return Logger.LogReturn( "Failed! Unable to save DB to file.", false );
 
-				BinaryDB db2 = new BinaryDB();
+				BinaryDB db2 = new();
 
 				// Trying to load previously saved database from file.
 				if( !db2.LoadFromFile() )
@@ -360,7 +360,7 @@ namespace MiCore.Test
 				}
 				catch
 				{
-					Logger.Log( "Failed! Unable to delete " + db1.FilePath + ".", LogType.Warning );
+					Logger.Log( $"Failed! Unable to delete { db1.FilePath }.", LogType.Warning );
 				}
 
 				db1?.Dispose();
